@@ -95,3 +95,5 @@ function Base.map(f, v::Vertex; cache = d())
 end
 
 Base.copy(v::Vertex) = map(identity, v)
+
+Base.isless(a::Vertex, b::Vertex) = b in reaching(a)

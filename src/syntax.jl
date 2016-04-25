@@ -79,6 +79,34 @@ function flow_func(ex)
   :($(esc(name)) = $(SyntaxGraph(args, input, output)))
 end
 
+# TODO: islands
+
+function constructor!(v::Vertex, ex, bindings = d())
+  haskey(bindings, v) && return bindings[v]
+  is = [constructor!(v, ex, bindings) for v in inputs(v)]
+  if length(outputs(v)) > 1 # FIXME
+    @gensym vertex
+    bindings[v] = vertex
+    v < v ?
+      push!(ex.args, :($vertex = Vertex($(v.value))), :(thread!($vertex, $(is...)))) :
+      push!(ex.args, :($vertex = Vertex($(v.value), $(is...))))
+    return v
+  else
+    return :(Vertex($(v.value), $(is...)))
+  end
+end
+
+constructor!(v::Needle, ex, bs = d()) =
+  constructor!(v.vertex, ex, bs) # FIXME
+
+function constructor(outs)
+  ex, bs = :(;), d()
+  for v in outs
+    push!(ex.args, constructor!(v, ex, bs))
+  end
+  return ex
+end
+
 macro flow(ex)
   isdef(ex) && return flow_func(ex)
   @capture(ex, exs__)
