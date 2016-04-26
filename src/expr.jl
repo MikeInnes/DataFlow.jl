@@ -29,7 +29,7 @@ function toexpr(g::SyntaxGraph)
   return :($(exs...);)
 end
 
-function (g::SyntaxGraph)(args...)
+function toexpr(g::SyntaxGraph, args...)
   length(args) == length(g.args) || error("Wrong number of arguments")
   :(let $([:($(g.args[i]) = $(args[i])) for i = 1:length(args)]...)
       $(toexpr(g))
