@@ -58,9 +58,9 @@ ilinev(f, ctx::Context, l::Union{Line,Frame}, v) = vertex(l, iline(f, ctx, l, v)
 ilambda(f, ctx::Context, ::Flosure, body, vars...) =
   (xs...) -> interpret(ctx, flopen(body), vars..., xs...)
 
-iargs(cb, ctx::Context, f, xs...) = cb(f, interpv(ctx, xs)...)
+iargs(cb, ctx::Context, f, xs...) = cb(ctx, f, interpv(ctx, xs)...)
 
-function ituple(f, s::Split, xs)
+function ituple(f, ctx::Context, s::Split, xs)
   isa(xs, Vertex) && value(xs) == tuple ? inputs(xs)[s.n] :
   isa(xs, Tuple) ? xs[s.n] :
     f(s, constant(xs))
@@ -70,7 +70,8 @@ for m in :[iconst, iline, ilinev, ilambda, ituple].args
   @eval $m(f, args...) = f(args...)
 end
 
-interpeval = mux(iline, ilambda, iconst, iargs, ituple, (f, xs...) -> f(xs...))
+interpeval = mux(iline, ilambda, iconst, iargs,
+                 ituple, (ctx, f, xs...) -> f(xs...))
 
 interpret(graph::IVertex, args...) =
   interpret(Context(interpeval), graph, args...)
