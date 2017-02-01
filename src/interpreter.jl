@@ -1,3 +1,13 @@
+module Interpreter
+
+using ..DataFlow
+using ..DataFlow: Constant, constant, value, spliceinputs, Frame, Line,
+  Flosure, Split, inputs
+
+export Context, mux, stack, interpret,
+  interpv, ituple, ilambda, iconst, iline, ilinev, iargs,
+  @ithrow, @icatch
+
 mux(f) = f
 mux(m, f) = (xs...) -> m(f, xs...)
 mux(ms...) = foldr(mux, ms)
@@ -129,4 +139,6 @@ macro icatch(ex)
       isa(e, InterpError) || rethrow()
       throw(e.e)
     end)
+end
+
 end
