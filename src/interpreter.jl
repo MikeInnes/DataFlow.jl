@@ -87,6 +87,8 @@ framename(x) = symbol(string(typeof(x)))
 totrace(stack) = [StackFrame(framename(f), Symbol(line.file), line.line)
                   for (f, line) in stack]
 
+Base.stacktrace(c::Context) = totrace(stack(c))
+
 type Exception{T}
   err::T
   trace::StackTrace
@@ -94,3 +96,37 @@ end
 
 errmsg(e::Exception) = errmsg(e.err)
 errtrace(e::Exception, bt) = errtrace(e.err, [e.trace..., bt...])
+
+type InterpError
+  e
+end
+
+function trimtrace(trace)
+  trace = reverse(trace)
+  comp = reverse(stacktrace())
+  n = 1
+  while n < length(trace) && n < length(comp) && trace[n] == comp[n]
+    n += 1
+  end
+  reverse(trace[n:end])
+end
+
+macro ithrow(ctx, ex)
+  :(try
+      $(esc(ex))
+    catch e
+      isa(e, InterpError) && rethrow()
+      ctx = $(esc(ctx))
+      trace = vcat(trimtrace(catch_stacktrace()), stacktrace(ctx))
+      throw(InterpError(Exception(e, trace)))
+    end)
+end
+
+macro icatch(ex)
+  :(try
+      $(esc(ex))
+    catch e
+      isa(e, InterpError) || rethrow()
+      throw(e.e)
+    end)
+end
