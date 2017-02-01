@@ -107,6 +107,14 @@ end
 errmsg(e::Exception) = errmsg(e.err)
 errtrace(e::Exception, bt) = errtrace(e.err, [e.trace..., bt...])
 
+function Base.showerror(io::IO, e::Exception)
+  showerror(io, e.err)
+  for t in e.trace
+    println(io)
+    show(io, t)
+  end
+end
+
 type InterpError
   e
 end
