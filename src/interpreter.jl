@@ -6,7 +6,7 @@ using ..DataFlow: Constant, constant, value, spliceinputs, Frame, Line,
 
 export Context, mux, stack, interpret,
   interpv, ituple, ilambda, iconst, iline, ilinev, iargs,
-  @ithrow, @icatch
+  @icatch, @ithrow
 
 mux(f) = f
 mux(m, f) = (xs...) -> m(f, xs...)
@@ -129,7 +129,7 @@ function trimtrace(trace)
   reverse(trace[n:end])
 end
 
-macro ithrow(ctx, ex)
+macro icatch(ctx, ex)
   :(try
       $(esc(ex))
     catch e
@@ -140,7 +140,7 @@ macro ithrow(ctx, ex)
     end)
 end
 
-macro icatch(ex)
+macro ithrow(ex)
   :(try
       $(esc(ex))
     catch e
