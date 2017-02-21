@@ -68,7 +68,7 @@ function applylines(ex)
     val = MacroTools.postwalk(val) do ex
       @capture(ex, l_Frame(x_)) && return x # Ignore frames for now
       @capture(ex, l_Line(x_)) || return ex
-      push!(ex′.args, Expr(:line, l.line, symbol(l.file)))
+      push!(ex′.args, Expr(:line, l.line, Symbol(l.file)))
       @gensym edge
       push!(ex′.args, :($edge = $x))
       return edge

@@ -92,7 +92,7 @@ import Juno: errmsg, errtrace
 
 framename(f::Function) = typeof(f).name.mt.name
 framename(f::Void) = Symbol("<none>")
-framename(x) = symbol(string(typeof(x)))
+framename(x) = Symbol(string(typeof(x)))
 
 totrace(stack) = [StackFrame(framename(f), Symbol(line.file), line.line)
                   for (f, line) in stack]
