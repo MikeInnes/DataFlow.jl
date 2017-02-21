@@ -1,6 +1,6 @@
 # DataFlow.jl
 
-[![Build Status](https://travis-ci.org/MikeInnes/DataFlow.jl.svg?branch=master)](https://travis-ci.org/MikeInnes/DataFlow.jl) [![Coverage Status](https://coveralls.io/repos/github/MikeInnes/DataFlow.jl/badge.svg?branch=master)](https://coveralls.io/github/MikeInnes/DataFlow.jl?branch=master)
+[![Build Status](https://travis-ci.org/MikeInnes/DataFlow.jl.svg?branch=master)](https://travis-ci.org/MikeInnes/DataFlow.jl)
 
 DataFlow.jl is a bit like [MacroTools](https://github.com/MikeInnes/MacroTools.jl), but instead of working with programs as expression trees, it works with them as dataflow graphs.
 
