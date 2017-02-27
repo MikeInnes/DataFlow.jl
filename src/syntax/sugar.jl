@@ -85,6 +85,12 @@ end
 
 immutable SkipFrame end
 
+function striplines(v)
+  postwalk(v) do v
+    isa(value(v), Line) || isa(value(v), Frame) ? v[1] : v
+  end
+end
+
 # Static tuples
 
 # TODO: just use `getindex` and `tuple` to represent these?
