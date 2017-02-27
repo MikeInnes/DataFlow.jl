@@ -1,3 +1,5 @@
+__precompile__()
+
 module DataFlow
 
 using Lazy, MacroTools, Juno
