@@ -26,7 +26,7 @@ code(x) = Juno.Model(Dict(:type=>"code",:text=>x))
 
 @render Juno.Inline v::Vertex begin
   s = MacroTools.alias_gensyms(syntax(v))
-  Tree(typeof(v), map(s -> code(string(s)), s.args))
+  LazyTree(typeof(v), map(s -> code(string(s)), () -> s.args))
 end
 
 # Function / expression macros
