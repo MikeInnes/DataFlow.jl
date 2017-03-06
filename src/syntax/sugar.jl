@@ -103,10 +103,8 @@ function normsplits(ex)
   MacroTools.prewalk(ex) do ex
     @capture(ex, (xs__,) = y_) || return ex
     @gensym edge
-    quote
-      $edge = $y
-      $((:($(xs[i]) = $(Split(i))($edge)) for i = 1:length(xs))...)
-    end
+    :($edge = $y;
+      $((:($(xs[i]) = $(Split(i))($edge)) for i = 1:length(xs))...))
   end |> MacroTools.flatten |> block
 end
 
