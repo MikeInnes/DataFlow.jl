@@ -3,6 +3,7 @@ module Interpreter
 using ..DataFlow
 using ..DataFlow: Constant, constant, value, spliceinputs, Frame, Line,
   Flosure, Split, inputs
+using MacroTools: @q
 
 export Context, mux, stack, interpret,
   interpv, ituple, ilambda, iconst, iline, ilinev, iargs,
@@ -141,12 +142,12 @@ macro icatch(ctx, ex)
 end
 
 macro ithrow(ex)
-  :(try
-      $(esc(ex))
-    catch e
-      isa(e, InterpError) || rethrow()
-      throw(e.e)
-    end)
+  @q try
+    $(esc(ex))
+  catch e
+    isa(e, InterpError) || rethrow()
+    throw(e.e)
+  end
 end
 
 end
