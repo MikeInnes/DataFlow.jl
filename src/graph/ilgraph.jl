@@ -1,4 +1,4 @@
-type IVertex{T} <: Vertex{T}
+mutable struct IVertex{T} <: Vertex{T}
   value::T
   inputs::Vector{IVertex{T}}
 

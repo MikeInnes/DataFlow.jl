@@ -12,7 +12,7 @@ end
 
 # Constants
 
-immutable Constant{T}
+struct Constant{T}
   value::T
 end
 
@@ -31,13 +31,13 @@ for (c, v) in [(:constant, :vertex), (:dconstant, :dvertex)]
   @eval $c(v::Vertex) = $v(v)
 end
 
-type Do end
+struct Do end
 
 tocall(::Do, a...) = :($(a...);)
 
 # Line Numbers
 
-immutable Line
+struct Line
   file::String
   line::Int
 end
@@ -79,11 +79,11 @@ function applylines(ex)
   return ex′
 end
 
-immutable Frame{T}
+struct Frame{T}
   f::T
 end
 
-immutable SkipFrame end
+struct SkipFrame end
 
 function striplines(v)
   postwalk(v) do v
@@ -94,7 +94,7 @@ end
 # Static tuples
 
 # TODO: just use `getindex` and `tuple` to represent these?
-immutable Split
+struct Split
   n::Int
 end
 
@@ -126,7 +126,7 @@ end
 
 # Bindings
 
-immutable Bind
+struct Bind
   name::Symbol
 end
 
@@ -141,7 +141,7 @@ end
 
 # Inputs
 
-immutable Input end
+struct Input end
 
 splitnode(v, n) = vertex(Split(n), v)
 
@@ -177,8 +177,8 @@ end
 
 # Closures
 
-immutable Flosure end
-immutable LooseEnd end
+struct Flosure end
+struct LooseEnd end
 
 # TODO: scope
 function normclosures(ex)

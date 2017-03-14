@@ -13,7 +13,7 @@ mux(f) = f
 mux(m, f) = (xs...) -> m(f, xs...)
 mux(ms...) = foldr(mux, ms)
 
-type Context{T}
+struct Context{T}
   interp::T
   cache::ObjectIdDict
   stack::Vector{Any}
@@ -100,7 +100,7 @@ totrace(stack) = [StackFrame(framename(f), Symbol(line.file), line.line)
 
 Base.stacktrace(c::Context) = totrace(stack(c))
 
-type Exception{T}
+struct Exception{T}
   err::T
   trace::StackTrace
 end
@@ -116,7 +116,7 @@ function Base.showerror(io::IO, e::Exception)
   end
 end
 
-type InterpError
+struct InterpError
   e
 end
 

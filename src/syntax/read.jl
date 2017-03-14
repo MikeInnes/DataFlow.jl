@@ -1,6 +1,6 @@
 # Syntax → Graph
 
-type LateVertex{T}
+struct LateVertex{T}
   val::DVertex{T}
   args::Vector{Any}
 end

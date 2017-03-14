@@ -1,7 +1,7 @@
 const ASet{T} = Base.AbstractSet{T}
 const ODict = ObjectIdDict
 
-immutable ObjectIdSet{T} <: ASet{T}
+struct ObjectIdSet{T} <: ASet{T}
   dict::ObjectIdDict
   ObjectIdSet{T}() where T = new(ObjectIdDict())
 end
@@ -27,7 +27,7 @@ Base.similar(s::ObjectIdSet, T::Type) = ObjectIdSet{T}()
 
 const OSet = ObjectIdSet
 
-immutable ObjectArraySet{T} <: ASet{T}
+struct ObjectArraySet{T} <: ASet{T}
   xs::Vector{T}
   ObjectArraySet{T}() where T = new(T[])
 end

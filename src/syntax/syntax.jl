@@ -42,7 +42,7 @@ function inputsm(args)
   return bindings
 end
 
-type SyntaxGraph
+struct SyntaxGraph
   args::Vector{Symbol}
   output::DVertex{Any}
 end

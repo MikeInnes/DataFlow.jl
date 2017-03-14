@@ -1,6 +1,4 @@
-# Construction
-
-type DVertex{T} <: Vertex{T}
+mutable struct DVertex{T} <: Vertex{T}
   value::T
   inputs::Vector{DVertex{T}}
   outputs::OASet{DVertex{T}}
