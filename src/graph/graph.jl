@@ -2,7 +2,7 @@ export Vertex, DVertex, IVertex, vertex, dvertex
 
 import Base: copy, hash, ==, <, <<
 
-abstract Vertex{T}
+abstract type Vertex{T} end
 
 Base.eltype{T}(::Vertex{T}) = T
 

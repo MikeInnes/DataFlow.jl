@@ -1,10 +1,9 @@
-typealias ASet{T} Base.AbstractSet{T}
-
-typealias ODict ObjectIdDict
+const ASet{T} = Base.AbstractSet{T}
+const ODict = ObjectIdDict
 
 immutable ObjectIdSet{T} <: ASet{T}
   dict::ObjectIdDict
-  ObjectIdSet() = new(ObjectIdDict())
+  ObjectIdSet{T}() where T = new(ObjectIdDict())
 end
 
 Base.eltype{T}(::ObjectIdSet{T}) = T
@@ -26,11 +25,11 @@ Base.similar(s::ObjectIdSet, T::Type) = ObjectIdSet{T}()
 
 @iter xs::ObjectIdSet -> keys(xs.dict)
 
-typealias OSet ObjectIdSet
+const OSet = ObjectIdSet
 
 immutable ObjectArraySet{T} <: ASet{T}
   xs::Vector{T}
-  ObjectArraySet() = new(T[])
+  ObjectArraySet{T}() where T = new(T[])
 end
 
 Base.in{T}(x::T, s::ObjectArraySet{T}) = any(y -> x ≡ y, s.xs)
@@ -47,4 +46,4 @@ Base.similar(s::ObjectArraySet, T::Type) = ObjectArraySet{T}()
 
 @iter xs::ObjectArraySet -> xs.xs
 
-typealias OASet{T} ObjectArraySet{T}
+const OASet{T} = ObjectArraySet{T}

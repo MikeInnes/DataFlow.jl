@@ -5,7 +5,7 @@ type DVertex{T} <: Vertex{T}
   inputs::Vector{DVertex{T}}
   outputs::OASet{DVertex{T}}
 
-  DVertex(x) = new(x, [], OASet{DVertex{T}}())
+  DVertex{T}(x) where T = new(x, [], OASet{DVertex{T}}())
 end
 
 DVertex(x) = DVertex{typeof(x)}(x)
@@ -56,7 +56,7 @@ function equal(a::Vertex, b::Vertex, seen = OSet())
   @assert @>> a outputs map(value) allunique
   @assert @>> b outputs map(value) allunique
   for o in outputs(a)
-    p = filter(p -> value(p) == value(o), outputs(b))
+    p = filter(p -> value(p) == value(o), collect(outputs(b)))
     isempty(p) && return false
     equal(o, first(p), seen) || return false
   end
