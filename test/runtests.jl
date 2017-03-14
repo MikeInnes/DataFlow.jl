@@ -3,7 +3,7 @@ using MacroTools, Lazy, Base.Test
 
 import DataFlow: graphm, syntax, cse, dvertex, constant, prewalk
 
-for nodes = 1:10, tries = 1:1_000
+for nodes = 1:10, tries = 1:100
 
   dl = grow(DVertex, nodes)
 
