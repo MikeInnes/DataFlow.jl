@@ -74,7 +74,7 @@ function applylines(ex)
       return edge
     end
     isexpr(val, Symbol) ? (ex′.args[end].args[1] = val) :
-      push!(ex′.args, var == nothing ? :($var = $val) : val)
+      push!(ex′.args, var == nothing ? val : :($var = $val))
   end
   return ex′
 end

@@ -74,7 +74,7 @@ iargs(cb, ctx::Context, f, xs...) = cb(ctx, f, interpv(ctx, xs)...)
 function ituple(f, ctx::Context, s::Split, xs)
   isa(xs, Vertex) && value(xs) == tuple ? inputs(xs)[s.n] :
   isa(xs, Tuple) ? xs[s.n] :
-    f(s, xs)
+    f(ctx, s, xs)
 end
 
 for m in :[iconst, iline, ilinev, ilambda, ituple].args
