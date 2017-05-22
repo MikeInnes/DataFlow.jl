@@ -157,7 +157,7 @@ splitnode(v, n) = vertex(Split(n), v)
 
 inputnode(n) = splitnode(constant(Input()), n)
 
-isinput(v::IVertex) = isa(value(v), Split) && value(v[1]) == Constant(Input())
+isinput(v::IVertex) = isa(value(v), Split) && isconstant(v[1]) && value(v[1][1]) == Input()
 
 function bumpinputs(v::IVertex)
   prewalk(v) do v
@@ -169,7 +169,7 @@ end
 
 function spliceinput(v::IVertex, input::IVertex)
   postwalk(v) do v
-    value(v) == Constant(Input()) ? input : v
+    isconstant(v) && value(v[1]) == Input() ? input : v
   end
 end
 
