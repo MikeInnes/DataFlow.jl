@@ -32,24 +32,16 @@ tocall(::typeof(broadcast), f, xs...) = :($f.($(xs...)))
 
 # Constants
 
-struct Constant{T}
-  value::T
-end
+struct Constant end
 
-tocall(c::Constant) = c.value
+tocall(c::Constant, x) = x.args[1]
 
 isconstant(v::Vertex) = isa(value(v), Constant)
 
-mapconst(f, g) = map(x -> isa(x, Constant) ? Constant(f(x.value)) : f(x), g)
+constant(x) = vertex(Constant(), vertex(x))
+constant(v::Vertex) = vertex(v)
 
-a::Constant == b::Constant = a.value == b.value
-
-Base.hash(c::Constant, h::UInt = UInt(0)) = hash((Constant, c.value), h)
-
-for (c, v) in [(:constant, :vertex), (:dconstant, :dvertex)]
-  @eval $c(x) = $v(Constant(x))
-  @eval $c(v::Vertex) = $v(v)
-end
+# Blocks
 
 struct Do end
 
@@ -216,4 +208,4 @@ function normclosures(ex)
 end
 
 # TODO: nested closures
-flopen(v::IVertex) = mapconst(x->x==LooseEnd()?Input():x,v)
+flopen(v::IVertex) = map(x->x==LooseEnd()?Input():x,v)
