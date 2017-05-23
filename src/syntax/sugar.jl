@@ -4,11 +4,16 @@ import Base: ==
 
 function desugar(ex)
   MacroTools.prewalk(ex) do ex
-    @capture(ex, (xs__,)) ? :(tuple($(xs...))) :
-    @capture(ex, xs_[i__]) ? :(getindex($xs, $(i...))) :
+    @capture(ex, (xs__,)) ? :($tuple($(xs...))) :
+    @capture(ex, xs_[i__]) ? :($getindex($xs, $(i...))) :
+    @capture(ex, f_.(xs__)) ? :($broadcast($f, $(xs...))) :
     ex
   end
 end
+
+tocall(::typeof(tuple), xs...) = :($(xs...),)
+tocall(::typeof(getindex), x, i...) = :($x[$(i...)])
+tocall(::typeof(broadcast), f, xs...) = :($f.($(xs...)))
 
 # Constants
 
