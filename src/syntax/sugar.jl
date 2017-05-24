@@ -2,12 +2,27 @@ import Base: ==
 
 # Basic julia sugar
 
-function desugar(ex)
+function normops(ex)
   MacroTools.prewalk(ex) do ex
-    @capture(ex, (xs__,)) ? :($tuple($(xs...))) :
-    @capture(ex, xs_[i__]) ? :($getindex($xs, $(i...))) :
-    @capture(ex, f_.(xs__)) ? :($broadcast($f, $(xs...))) :
-    ex
+    @match ex begin
+      x_ .+ y_ => :((+).($x,$y))
+      x_ .- y_ => :((-).($x,$y))
+      x_ .* y_ => :((*).($x,$y))
+      x_ ./ y_ => :((/).($x,$y))
+      _ => ex
+    end
+  end
+end
+
+function desugar(ex)
+  ex = normops(ex)
+  MacroTools.prewalk(ex) do ex
+    @match ex begin
+      (xs__,)   => :($tuple($(xs...)))
+      xs_[i__]  => :($getindex($xs, $(i...)))
+      f_.(xs__) => :($broadcast($f, $(xs...)))
+      _ => ex
+    end
   end
 end
 
