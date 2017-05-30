@@ -128,8 +128,6 @@ function normsplits(ex)
   end |> MacroTools.flatten |> block
 end
 
-tocall(::typeof(tuple), args...) = :($(args...),)
-
 tocall(s::Split, x) = :($x[$(s.n)])
 
 group(xs...) = vertex(tuple, xs...)
