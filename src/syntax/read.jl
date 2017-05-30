@@ -46,15 +46,18 @@ function graphm(bindings, ex::Expr)
   dvertex(f, map(ex -> graphm(bindings, ex), args)...)
 end
 
-function fillnodes!(bindings)
-  for (b, node) in bindings
+function fillnodes!(bindings, nodes)
+  # TODO: remove this once constants are fixed
+  for b in nodes
+    node = bindings[b]
     if isa(node, Vertex) && isconstant(node) && haskey(bindings, value(node).value)
       alias = bindings[value(node).value]
       isa(alias, LateVertex) && (alias = alias.val)
       bindings[b] = alias
     end
   end
-  for (b, node) in bindings
+  for b in nodes
+    node = bindings[b]
     isa(node, LateVertex) || continue
     for arg in node.args
       thread!(node.val, graphm(bindings, arg))
@@ -67,8 +70,9 @@ end
 function graphm(bindings, exs::Vector)
   exs = normalise(:($(exs...);)).args
   @capture(exs[end], result_Symbol = _)
-  merge!(bindings, latenodes(exs))
-  fillnodes!(bindings)
+  lates = latenodes(exs)
+  merge!(bindings, lates)
+  fillnodes!(bindings, keys(lates))
   output = graphm(bindings, result)
 end
 
