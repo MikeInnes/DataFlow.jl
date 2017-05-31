@@ -2,7 +2,7 @@ module Interpreter
 
 using ..DataFlow
 using ..DataFlow: Constant, constant, value, spliceinputs, Frame, Line,
-  Flosure, Split, inputs
+  Flosure, Split, inputs, flopen
 using MacroTools: @q
 
 export Context, mux, stack, interpret,
