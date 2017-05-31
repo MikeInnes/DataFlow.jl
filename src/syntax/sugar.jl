@@ -215,4 +215,5 @@ function normclosures(ex)
   end |> MacroTools.flatten |> block
 end
 
+# TODO: nested closures
 flopen(v::IVertex) = mapconst(x->x==LooseEnd()?Input():x,v)
