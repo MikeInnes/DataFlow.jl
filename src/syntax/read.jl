@@ -50,8 +50,8 @@ function fillnodes!(bindings, nodes)
   # TODO: remove this once constants are fixed
   for b in nodes
     node = bindings[b]
-    if isa(node, Vertex) && isconstant(node) && haskey(bindings, value(node).value)
-      alias = bindings[value(node).value]
+    if isa(node, Vertex) && isconstant(node) && haskey(bindings, value(node[1]))
+      alias = bindings[value(node[1])]
       isa(alias, LateVertex) && (alias = alias.val)
       bindings[b] = alias
     end

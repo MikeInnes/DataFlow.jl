@@ -11,7 +11,7 @@ function syntax(head::DVertex; bindconst = !isfinal(head))
   for v in vs
     x = tocall(value(v), [binding(bs, n) for n in inputs(v)]...)
     if !bindconst && isconstant(v) && nout(v) > 1
-      bs[v] = value(v).value
+      bs[v] = v[1].value
     elseif nout(v) > 1 || (!isfinal(head) && v ≡ head)
       edge = binding(bs, v)
       push!(ex.args, :($edge = $x))
@@ -29,16 +29,13 @@ function syntax(head::DVertex; bindconst = !isfinal(head))
   return ex
 end
 
+# TODO: this is butt ugly
+
 function constructor(g)
   vertex = isa(g, DVertex) ? :dvertex : :vertex
   g = mapv(g) do v
-    if isconstant(v)
-      prethread!(v, typeof(v)(value(v)))
-      v.value = :constant
-    else
-      prethread!(v, typeof(v)(Constant(value(v))))
-      v.value = vertex
-    end
+    prethread!(v, typeof(v)(Constant(), typeof(v)(value(v))))
+    v.value = vertex
     v
   end
   ex = syntax(g)

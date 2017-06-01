@@ -57,7 +57,7 @@ end
 function flowm(ex, f = dl)
   isdef(ex) && return flow_func(ex)
   g = graphm(block(ex))
-  g = mapconst(x -> isexpr(x, :$) ? esc(x.args[1]) : Expr(:quote, x), g)
+  g = map(x -> isexpr(x, :$) ? esc(x.args[1]) : Expr(:quote, x), g)
   constructor(f(g))
 end
 
@@ -71,7 +71,7 @@ end
 
 function vtxm(ex, f = dl)
   exs = graphm(block(ex))
-  @>> exs graphm mapconst(esc) f constructor
+  @>> exs graphm map(esc) f constructor
 end
 
 macro vtx(ex)

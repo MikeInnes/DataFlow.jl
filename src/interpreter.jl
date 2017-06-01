@@ -55,7 +55,7 @@ interpret(ctx::Context, graph::IVertex, args...) =
 
 # The `ifoo` convention denotes a piece of interpreter middleware
 
-iconst(f, ctx::Context, x::Constant) = x.value
+iconst(f, ctx::Context, ::Constant, x) = value(x)
 
 function iline(f, ctx::Context, l::Union{Line,Frame}, v)
   push!(ctx.stack, l)
