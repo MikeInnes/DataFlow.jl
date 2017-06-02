@@ -13,7 +13,13 @@ function bindings(ex)
   return bs
 end
 
+function normreturn(ex)
+  @capture(ex.args[end], return x_) && (ex.args[end] = x)
+  ex
+end
+
 function normedges(ex)
+  ex = normreturn(ex)
   map!(ex.args, ex.args) do ex
     isline(ex) ? ex :
     @capture(ex, _ = _) ? ex :
