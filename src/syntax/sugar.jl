@@ -124,6 +124,7 @@ tocall(s::Split, x) = :($x[$(s.n)])
 
 group(xs...) = vertex(tuple, xs...)
 
+# TODO: fail gracefully when tuples are short
 function detuple(v::IVertex)
   postwalk(v) do v
     if isa(value(v), Split) && value(v[1]) == tuple
