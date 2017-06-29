@@ -192,6 +192,8 @@ struct Flosure end
 struct LooseEnd end
 
 # TODO: scope
+# close over inputs
+# nested closures
 function normclosures(ex)
   bs = bindings(ex)
   MacroTools.prewalk(shortdef(ex)) do ex
