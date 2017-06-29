@@ -82,4 +82,4 @@ function graphm(bindings, exs::Vector)
   output = graphm(bindings, result)
 end
 
-graphm(x) = graphm(d(), x)
+graphm(x) = graphm(d(), block(x))
