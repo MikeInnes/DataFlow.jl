@@ -77,6 +77,8 @@ function ituple(f, ctx::Context, s::Split, xs)
     f(ctx, s, xs)
 end
 
+ituple(f, ctx::Context, ::typeof(tuple), xs...) = tuple(xs...)
+
 for m in :[iconst, iline, ilinev, ilambda, ituple].args
   @eval $m(f, args...) = f(args...)
 end
