@@ -188,27 +188,33 @@ end
 
 # Closures
 
-struct Flosure end
-struct LooseEnd end
+const uid = Ref(UInt64(0))
+
+struct Flosure
+  id::UInt64
+end
+
+struct LooseEnd
+  id::UInt64
+end
 
 # TODO: scope
 # close over inputs
-# nested closures
 function normclosures(ex)
   bs = bindings(ex)
   MacroTools.prewalk(shortdef(ex)) do ex
     @capture(ex, (args__,) -> body_) || return ex
+    id = uid[] += 1
     @assert all(arg -> isa(arg, Symbol), args)
     closed = filter(x -> inexpr(body, x), bs)
     vars = vcat(closed, args)
     body = MacroTools.prewalk(body) do ex
       ex in vars ?
-        Expr(:call, Split(findfirst(x->x==ex, vars)), LooseEnd()) :
+        Expr(:call, Split(findfirst(x->x==ex, vars)), LooseEnd(id)) :
         ex
     end
-    :($(Flosure())($body, $(closed...)))
+    :($(Flosure(id))($body, $(closed...)))
   end |> MacroTools.flatten |> block
 end
 
-# TODO: nested closures
-flopen(v::IVertex) = map(x->x==LooseEnd()?Input():x,v)
+flopen(f::Flosure, v::IVertex) = map(x->x==LooseEnd(f.id)?Input():x,v)

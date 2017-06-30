@@ -66,8 +66,8 @@ end
 
 ilinev(f, ctx::Context, l::Union{Line,Frame}, v) = vertex(l, iline(f, ctx, l, v))
 
-ilambda(f, ctx::Context, ::Flosure, body, vars...) =
-  (xs...) -> interpret(ctx, flopen(body), vars..., xs...)
+ilambda(f, ctx::Context, λ::Flosure, body, vars...) =
+  (xs...) -> interpret(ctx, flopen(λ, body), vars..., xs...)
 
 iargs(cb, ctx::Context, f, xs...) = cb(ctx, f, interpv(ctx, xs)...)
 
