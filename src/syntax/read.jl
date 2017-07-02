@@ -1,10 +1,5 @@
 # Syntax → Graph
 
-struct LateVertex{T}
-  val::DVertex{T}
-  args::Vector{Any}
-end
-
 function bindings(ex)
   bs = []
   for ex in ex.args
@@ -34,8 +29,8 @@ normalise(ex) =
 function latenodes(exs)
   bindings = d()
   for ex in exs
-    @capture(ex, b_Symbol = (f_(a__) | f_)) || error("invalid flow binding `$ex`")
-    bindings[b] = a == nothing ? constant(f) : LateVertex(dvertex(f), a)
+    @capture(ex, b_Symbol = x_)
+    bindings[b] = dvertex(x)
   end
   return bindings
 end
@@ -44,31 +39,35 @@ graphm(bindings, node) = constant(node)
 graphm(bindings, node::Vertex) = node
 graphm(bindings, ex::Symbol) =
   haskey(bindings, ex) ? graphm(bindings, bindings[ex]) : constant(ex)
-graphm(bindings, node::LateVertex) = node.val
 
-function graphm(bindings, ex::Expr)
-  isexpr(ex, :block) && return graphm(bindings, ex.args)
-  @capture(ex, f_(args__)) || return constant(ex)
-  dvertex(f, map(ex -> graphm(bindings, ex), args)...)
+function graphm!(v, bindings, ex::Expr)
+  if @capture(ex, f_(args__))
+    v.value = f
+    thread!(v, map(ex -> graphm(bindings, ex), args)...)
+  else
+    thread!(v, dvertex(ex))
+    v.value = Constant()
+  end
+  return v
 end
 
+graphm(bindings, ex::Expr) =
+  isexpr(ex, :block) ? graphm(bindings, ex.args) :
+    graphm!(dvertex(nothing), bindings, ex)
+
 function fillnodes!(bindings, nodes)
-  # TODO: remove this once constants are fixed
+  nodes′ = []
   for b in nodes
     node = bindings[b]
-    if isa(node, Vertex) && isconstant(node) && haskey(bindings, value(node[1]))
-      alias = bindings[value(node[1])]
-      isa(alias, LateVertex) && (alias = alias.val)
-      bindings[b] = alias
+    if !(value(node) isa Expr)
+      bindings[b] = graphm(bindings, value(node))
+    else
+      push!(nodes′, b)
     end
   end
-  for b in nodes
+  for b in nodes′
     node = bindings[b]
-    isa(node, LateVertex) || continue
-    for arg in node.args
-      thread!(node.val, graphm(bindings, arg))
-    end
-    bindings[b] = node.val
+    graphm!(node, bindings, node.value)
   end
   return bindings
 end
