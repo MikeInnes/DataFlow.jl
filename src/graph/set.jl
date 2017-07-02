@@ -35,6 +35,12 @@ end
 Base.in{T}(x::T, s::ObjectArraySet{T}) = any(y -> x ≡ y, s.xs)
 Base.push!(s::ObjectArraySet, x) = (x ∉ s && push!(s.xs, x); s)
 
+function Base.delete!(s::ObjectArraySet, x)
+  i = findfirst(s.xs, x)
+  i ≠ 0 && deleteat!(s.xs, i)
+  return s
+end
+
 (::Type{ObjectArraySet{T}}){T}(xs) = push!(ObjectArraySet{T}(), xs...)
 
 ObjectArraySet(xs) = ObjectArraySet{eltype(xs)}(xs)
