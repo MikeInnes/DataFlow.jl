@@ -81,4 +81,6 @@ function graphm(bindings, exs::Vector)
   output = graphm(bindings, result)
 end
 
-graphm(x) = graphm(d(), block(x))
+bindargs(xs) = Dict{Any,Any}(x => inputnode(i) for (i, x) in enumerate(xs))
+
+graphm(x; args = ()) = graphm(bindargs(args), block(x))
