@@ -24,7 +24,7 @@ function normedges(ex)
 end
 
 normalise(ex) =
-  @> ex normsplits normclosures normedges normlines desugar
+  @> ex normsplits normclosures block normedges normlines desugar
 
 function latenodes(exs)
   bindings = d()
