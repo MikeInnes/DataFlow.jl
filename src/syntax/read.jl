@@ -40,10 +40,14 @@ graphm(bindings, node::Vertex) = node
 graphm(bindings, ex::Symbol) =
   haskey(bindings, ex) ? graphm(bindings, bindings[ex]) : constant(ex)
 
+function tovertex!(v, bs, f, xs...)
+  v.value = f
+  thread!(v, map(ex -> graphm(bs, ex), xs)...)
+end
+
 function graphm!(v, bindings, ex::Expr)
   if @capture(ex, f_(args__))
-    v.value = f
-    thread!(v, map(ex -> graphm(bindings, ex), args)...)
+    tovertex!(v, bindings, f, args...)
   else
     thread!(v, dvertex(ex))
     v.value = Constant()

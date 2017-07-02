@@ -198,23 +198,24 @@ struct LooseEnd
   id::UInt64
 end
 
-# TODO: scope
-# close over inputs
 function normclosures(ex)
-  bs = bindings(ex)
   MacroTools.prewalk(shortdef(ex)) do ex
     @capture(ex, (args__,) -> body_) || return ex
-    id = uid[] += 1
     @assert all(arg -> isa(arg, Symbol), args)
-    closed = filter(x -> inexpr(body, x), bs)
-    vars = vcat(closed, args)
-    body = MacroTools.prewalk(body) do ex
-      ex in vars ?
-        Expr(:call, Split(findfirst(x->x==ex, vars)), LooseEnd(id)) :
-        ex
-    end
-    :($(Flosure(id))($body, $(closed...)))
-  end |> MacroTools.flatten |> block
+    :($(Flosure(uid[] += 1))($body, $(args...)))
+  end
+end
+
+function tovertex!(v, bs, f::Flosure, body, args...)
+  v.value = f
+  closed = setdiff(collect(filter(x -> inexpr(body, x), keys(bs))), args)
+  vars = [closed..., args...]
+  body = MacroTools.prewalk(body) do ex
+    ex in vars ?
+      Expr(:call, Split(findfirst(x->x==ex, vars)), LooseEnd(f.id)) :
+      ex
+  end
+  thread!(v, graphm(body), graphm.(bs, closed)...)
 end
 
 flopen(f::Flosure, v::IVertex) = map(x->x==LooseEnd(f.id)?Input():x,v)
