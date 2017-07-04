@@ -188,33 +188,36 @@ end
 
 # Closures
 
-const uid = Ref(UInt64(0))
-
 struct Flosure
-  id::UInt64
-end
-
-Flosure() = Flosure(uid[] += 1)
-
-struct LooseEnd
-  id::UInt64
+  body::IVertex{Any}
 end
 
 function normclosures(ex)
   MacroTools.prewalk(shortdef(ex)) do ex
     @capture(ex, (args__,) -> body_) || return ex
     @assert all(arg -> isa(arg, Symbol), args)
-    :($(Flosure(uid[] += 1))($body, $(args...)))
+    :($(Flosure(constant(nothing)))($body, $(args...)))
   end
 end
 
 function tovertex!(v, bs, f::Flosure, body, args...)
-  v.value = f
   closed = setdiff(collect(filter(x -> inexpr(body, x), keys(bs))), args)
   vars = [closed..., args...]
-  body = flclose(graphm(merge(bs, bindargs(vars)), body), f)
-  thread!(v, body, graphm.(bs, closed)...)
+  v.value = Flosure(graphm(merge(bs, bindargs(vars)), body))
+  thread!(v, graphm.(bs, closed)...)
 end
 
-flopen(f::Flosure, v::Vertex) = map(x->x==LooseEnd(f.id)?Input():x,v)
-flclose(v::Vertex, λ = Flosure()) = map(x->x==Input()?LooseEnd(λ.id):x,v)
+function tocall(f::Flosure, closed...)
+  ex = :(;)
+  bind(x, s = gensym(:c)) = (push!(ex.args, :($s = $x)); s)
+  closed = [x isa Expr ? bind(x) : x for x in closed]
+  args = [gensym(:x) for _ in 1:DataFlow.graphinputs(f.body)-length(closed)]
+  vars = [closed..., args...]
+  body = prewalk(f.body) do x
+    value(x) isa Split && x[1] == constant(Input()) ?
+      constant(vars[value(x).n]) :
+      x
+  end
+  push!(ex.args, Expr(:->, :($(args...),), unblock(syntax(body))))
+  return ex
+end

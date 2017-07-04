@@ -2,7 +2,7 @@ module Interpreter
 
 using ..DataFlow
 using ..DataFlow: Constant, constant, value, spliceinputs, Frame, Line,
-  Flosure, Split, inputs, flopen
+  Flosure, Split, inputs
 using MacroTools: @q
 
 export Context, mux, stack, interpret,
@@ -66,8 +66,8 @@ end
 
 ilinev(f, ctx::Context, l::Union{Line,Frame}, v) = vertex(l, iline(f, ctx, l, v))
 
-ilambda(f, ctx::Context, λ::Flosure, body, vars...) =
-  (xs...) -> interpret(ctx, flopen(λ, body), vars..., xs...)
+ilambda(f, ctx::Context, λ::Flosure, vars...) =
+  (xs...) -> interpret(ctx, λ.body, vars..., xs...)
 
 iargs(cb, ctx::Context, f, xs...) = cb(ctx, f, interpv(ctx, xs)...)
 
