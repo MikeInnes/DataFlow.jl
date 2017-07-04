@@ -194,6 +194,8 @@ struct Flosure
   id::UInt64
 end
 
+Flosure() = Flosure(uid[] += 1)
+
 struct LooseEnd
   id::UInt64
 end
@@ -210,12 +212,9 @@ function tovertex!(v, bs, f::Flosure, body, args...)
   v.value = f
   closed = setdiff(collect(filter(x -> inexpr(body, x), keys(bs))), args)
   vars = [closed..., args...]
-  body = MacroTools.prewalk(body) do ex
-    ex in vars ?
-      Expr(:call, Split(findfirst(x->x==ex, vars)), LooseEnd(f.id)) :
-      ex
-  end
-  thread!(v, graphm(body), graphm.(bs, closed)...)
+  body = flclose(graphm(merge(bs, bindargs(vars)), body), f)
+  thread!(v, body, graphm.(bs, closed)...)
 end
 
-flopen(f::Flosure, v::IVertex) = map(x->x==LooseEnd(f.id)?Input():x,v)
+flopen(f::Flosure, v::Vertex) = map(x->x==LooseEnd(f.id)?Input():x,v)
+flclose(v::Vertex, λ = Flosure()) = map(x->x==Input()?LooseEnd(λ.id):x,v)
