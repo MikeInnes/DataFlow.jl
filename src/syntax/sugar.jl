@@ -188,7 +188,7 @@ end
 
 # Closures
 
-struct Flosure
+struct Lambda
   body::IVertex{Any}
 end
 
@@ -196,18 +196,18 @@ function normclosures(ex)
   MacroTools.prewalk(shortdef(ex)) do ex
     @capture(ex, (args__,) -> body_) || return ex
     @assert all(arg -> isa(arg, Symbol), args)
-    :($(Flosure(constant(nothing)))($body, $(args...)))
+    :($(Lambda(constant(nothing)))($body, $(args...)))
   end
 end
 
-function tovertex!(v, bs, f::Flosure, body, args...)
+function tovertex!(v, bs, f::Lambda, body, args...)
   closed = setdiff(collect(filter(x -> inexpr(body, x), keys(bs))), args)
   vars = [closed..., args...]
-  v.value = Flosure(graphm(merge(bs, bindargs(vars)), body))
+  v.value = Lambda(graphm(merge(bs, bindargs(vars)), body))
   thread!(v, graphm.(bs, closed)...)
 end
 
-function tocall(f::Flosure, closed...)
+function tocall(f::Lambda, closed...)
   ex = :(;)
   bind(x, s = gensym(:c)) = (push!(ex.args, :($s = $x)); s)
   closed = [x isa Expr ? bind(x) : x for x in closed]
