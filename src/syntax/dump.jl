@@ -32,8 +32,9 @@ end
 # TODO: this is butt ugly
 
 function constructor(g)
-  vertex = isa(g, DVertex) ? :dvertex : :vertex
+  vertex = isa(g, DVertex) ? :(DataFlow.dvertex) : :(DataFlow.vertex)
   g = mapv(g) do v
+    value(v) isa Flosure && (v.value = :(DataFlow.Flosure($(constructor(value(v).body)))))
     prethread!(v, typeof(v)(Constant(), typeof(v)(value(v))))
     v.value = vertex
     v
