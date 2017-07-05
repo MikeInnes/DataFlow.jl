@@ -219,5 +219,5 @@ function tocall(f::Flosure, closed...)
       x
   end
   push!(ex.args, Expr(:->, :($(args...),), unblock(syntax(body))))
-  return ex
+  return unblock(ex)
 end
