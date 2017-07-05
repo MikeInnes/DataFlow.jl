@@ -67,7 +67,7 @@ ilinev(f, ctx::Context, l::Union{Line,Frame}, v) = vertex(l, iline(f, ctx, l, v)
 ilambda(f, ctx::Context, λ::Lambda, vars...) =
   (xs...) -> interpret(ctx, λ.body, vars..., xs...)
 
-iargs(cb, ctx::Context, f, xs...) = cb(ctx, f, interpv(ctx, xs)...)
+iargs(cb, ctx::Context, f, xs...) = cb(ctx, f, interpv.(ctx, xs)...)
 
 function ituple(f, ctx::Context, s::Split, xs)
   isa(xs, Vertex) && value(xs) == tuple ? inputs(xs)[s.n] :
