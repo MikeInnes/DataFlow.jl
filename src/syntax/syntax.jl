@@ -33,25 +33,11 @@ end
 
 export @flow, @iflow, @vtx, @ivtx
 
-function inputsm(args)
-  bindings = d()
-  for arg in args
-    isa(arg, Symbol) || error("invalid argument $arg")
-    bindings[arg] = constant(arg)
-  end
-  return bindings
-end
-
-struct SyntaxGraph
-  args::Vector{Symbol}
-  output::DVertex{Any}
-end
-
 function flow_func(ex)
   @capture(shortdef(ex), name_(args__) = exs__)
-  bs = inputsm(args)
-  output = graphm(bs, exs)
-  :($(esc(name)) = $(SyntaxGraph(args, output)))
+  @assert all(isa.(args, Symbol))
+  output = graphm(exs, args = args)
+  :($(esc(name)) = $output)
 end
 
 function flowm(ex, f = dl)
