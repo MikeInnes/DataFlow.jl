@@ -43,8 +43,6 @@ function interpv(ctx::Context, graph::IVertex)
   ctx.cache[graph] = ctx.interp(ctx, value(graph), inputs(graph)...)
 end
 
-interpv(ctx::Context, xs::Tuple) = map(x -> interpv(ctx, x), xs)
-
 function interpret(ctx::Context, graph::IVertex, args::IVertex...)
   graph = spliceinputs(graph, args...)
   interpv(ctx, graph)
