@@ -154,11 +154,18 @@ end
 
 struct Input end
 
-splitnode(v, n) = vertex(Split(n), v)
-
-inputnode(n) = splitnode(constant(Input()), n)
+inputnode(is...) = foldl((x, i) -> vertex(Split(i), x), constant(Input()), is)
 
 isinput(v::IVertex) = isa(value(v), Split) && isconstant(v[1]) && value(v[1][1]) == Input()
+
+function inputidx(v::IVertex)
+  i = Int[]
+  while value(v) isa Split
+    unshift!(i, value(v).n)
+    v = v[1]
+  end
+  v == constant(Input()) ? i : nothing
+end
 
 function bumpinputs(v::IVertex)
   prewalk(v) do v
