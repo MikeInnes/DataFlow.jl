@@ -216,8 +216,8 @@ function tocall(f::Lambda, closed...)
   args = [gensym(:x) for _ in 1:f.args]
   vars = [closed..., args...]
   body = prewalk(f.body) do x
-    value(x) isa Split && x[1] == constant(Input()) ?
-      constant(vars[value(x).n]) :
+    isinput(x) ? constant(vars[value(x).n]) :
+    x == constant(Input()) ? constant(:($(vars...),)) :
       x
   end
   push!(ex.args, Expr(:->, :($(args...),), unblock(syntax(body))))
