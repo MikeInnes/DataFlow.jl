@@ -233,7 +233,24 @@ end
 
 function fuse(λ::Lambda, vars::IVertex...)
   inputs = [inputnode(n+1) for n = 1:λ.args]
-  Lambda(λ.args, spliceinputs(λ.body, spliceinput.(vars, inputnode(1))..., inputs...))
+  Lambda(λ.args, detuple(spliceinputs(λ.body, spliceinput.(vars, inputnode(1))..., inputs...)))
 end
 
 fuse(v::IVertex) = vertex(fuse(value(v), inputs(v)...), constant(Input()))
+
+function fish(λ::Lambda, var::IVertex)
+  key = gensym()
+  body = postwalk(v -> v == inputnode(1) ? constant(key) : v, λ.body)
+  vars = []
+  body = prewalk(body) do v
+    contains(v, Input()) && return v
+    push!(vars, postwalk(v -> v == constant(key) ? var : v, v))
+    inputnode(1, length(vars))
+  end
+  Lambda(λ.args, body), vars
+end
+
+function fish(v::IVertex)
+  λ, vars = fish(value(v), inputs(v)...)
+  vertex(λ, vertex(tuple, vars...))
+end
