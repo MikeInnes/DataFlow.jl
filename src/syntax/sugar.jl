@@ -177,6 +177,7 @@ end
 spliceinputs(v::IVertex, inputs::Vertex...) =
   spliceinput(v, group(inputs...))
 
+# TODO: move away from this, it's unreliable
 function graphinputs(v::IVertex)
   n = 0
   prewalk(v) do v
