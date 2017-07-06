@@ -240,7 +240,7 @@ fuse(v::IVertex) = vertex(fuse(value(v), inputs(v)...), constant(Input()))
 
 function fish(λ::Lambda, var::IVertex)
   key = gensym()
-  body = postwalk(v -> v == inputnode(1) ? constant(key) : v, λ.body)
+  body = detuple(spliceinputs(λ.body, constant(key), [inputnode(n+1) for n = 1:λ.args]...))
   vars = []
   body = prewalk(body) do v
     contains(v, Input()) && return v
