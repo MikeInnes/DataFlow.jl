@@ -223,3 +223,10 @@ function tocall(f::Lambda, closed...)
   push!(ex.args, Expr(:->, :($(args...),), unblock(syntax(body))))
   return unblock(ex)
 end
+
+function fuse(λ::Lambda, vars::IVertex...)
+  inputs = [inputnode(n+1) for n = 1:λ.args]
+  Lambda(λ.args, spliceinputs(λ.body, spliceinput.(vars, inputnode(1))..., inputs...))
+end
+
+fuse(v::IVertex) = vertex(fuse(value(v), inputs(v)...), constant(Input()))
