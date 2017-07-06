@@ -190,6 +190,7 @@ end
 # Closures
 
 struct Lambda
+  args::Int
   body::IVertex{Any}
 end
 
@@ -197,14 +198,14 @@ function normclosures(ex)
   MacroTools.prewalk(shortdef(ex)) do ex
     @capture(ex, (args__,) -> body_) || return ex
     @assert all(arg -> isa(arg, Symbol), args)
-    :($(Lambda(constant(nothing)))($body, $(args...)))
+    :($(Lambda(length(args), constant(nothing)))($body, $(args...)))
   end
 end
 
 function tovertex!(v, bs, f::Lambda, body, args...)
   closed = setdiff(collect(filter(x -> inexpr(body, x), keys(bs))), args)
   vars = [closed..., args...]
-  v.value = Lambda(graphm(merge(bs, bindargs(vars)), body))
+  v.value = Lambda(f.args, graphm(merge(bs, bindargs(vars)), body))
   thread!(v, graphm.(bs, closed)...)
 end
 
@@ -212,7 +213,7 @@ function tocall(f::Lambda, closed...)
   ex = :(;)
   bind(x, s = gensym(:c)) = (push!(ex.args, :($s = $x)); s)
   closed = [x isa Expr ? bind(x) : x for x in closed]
-  args = [gensym(:x) for _ in 1:DataFlow.graphinputs(f.body)-length(closed)]
+  args = [gensym(:x) for _ in 1:f.args]
   vars = [closed..., args...]
   body = prewalk(f.body) do x
     value(x) isa Split && x[1] == constant(Input()) ?

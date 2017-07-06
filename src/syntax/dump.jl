@@ -34,7 +34,7 @@ end
 function constructor(g)
   vertex = isa(g, DVertex) ? :(DataFlow.dvertex) : :(DataFlow.vertex)
   g = mapv(g) do v
-    value(v) isa Lambda && (v.value = :(DataFlow.Lambda($(constructor(value(v).body)))))
+    value(v) isa Lambda && (v.value = :(DataFlow.Lambda($(value(v).args), $(constructor(value(v).body)))))
     prethread!(v, typeof(v)(Constant(), typeof(v)(value(v))))
     v.value = vertex
     v
