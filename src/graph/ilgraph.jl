@@ -69,3 +69,9 @@ function iscyclic(v::IVertex)
   prefor(v -> is |= ↺(v), v)
   return is
 end
+
+function Base.contains(haystack::IVertex, needle)
+  result = false
+  map(v -> result |= v == needle, haystack)
+  return result
+end
