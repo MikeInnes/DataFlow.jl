@@ -196,10 +196,17 @@ end
 
 # Closures
 
+import Base: ==
+
 struct Lambda
   args::Int
   body::IVertex{Any}
 end
+
+rand(UInt)
+
+a::Lambda == b::Lambda = a.args == b.args && a.body == b.body
+Base.hash(a::Lambda, h::UInt) = hash(Lambda, hash(a.args, hash(a.body, h)))
 
 function normclosures(ex)
   MacroTools.prewalk(shortdef(ex)) do ex
