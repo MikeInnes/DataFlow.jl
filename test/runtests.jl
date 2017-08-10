@@ -3,6 +3,10 @@ using MacroTools, Lazy, Base.Test
 
 import DataFlow: graphm, syntax, cse, dvertex, constant, prewalk
 
+@testset "DataFlow" begin
+
+@testset "I/O" begin
+
 for nodes = 1:10, tries = 1:100
 
   dl = grow(DVertex, nodes)
@@ -18,6 +22,10 @@ for nodes = 1:10, tries = 1:100
   @test copy(il) == il == prewalk(identity, il)
 
 end
+
+end
+
+@testset "Syntax" begin
 
 @flow function recurrent(xs)
   hidden = σ( Wxh*xs + Whh*hidden + bh )
@@ -49,4 +57,8 @@ end)
 
 let x = :(2+2)
   @test @flow(foo($x)) == dvertex(:foo, constant(x))
+end
+
+end
+
 end
