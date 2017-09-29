@@ -44,7 +44,7 @@ function constructor(g)
   for x in block(ex).args
     if @capture(x, v_ = $vertex(f_, a__))
       push!(decls, :($v = $vertex($f)))
-      push!(exs, :(thread!($v, $(a...))))
+      push!(exs, :(DataFlow.thread!($v, $(a...))))
     else
       push!(exs, x)
     end
