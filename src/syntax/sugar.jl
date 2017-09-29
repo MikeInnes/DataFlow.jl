@@ -195,6 +195,7 @@ function graphinputs(v::IVertex)
 end
 
 # Closures
+# TODO: always close over a single tuple, remove need for arg count
 
 import Base: ==
 
@@ -236,29 +237,44 @@ function tocall(f::Lambda, closed...)
   return unblock(ex)
 end
 
-function fuse(λ::Lambda, vars::IVertex...)
-  inputs = [inputnode(n+1) for n = 1:λ.args]
-  Lambda(λ.args, spliceinputs(λ.body, spliceinput.(vars, inputnode(1))..., inputs...))
+# "Open" Closures
+
+const uid = Ref(UInt64(0))
+
+struct OLambda
+  args::Int
+  id::UInt64
 end
 
-fuse(v::IVertex) = vertex(fuse(value(v), inputs(v)...), constant(Input()))
+OLambda(args) = OLambda(args, uid[] += 1)
 
-function fish(λ::Lambda, var::IVertex)
-  key = gensym()
-  body = detuple(spliceinputs(λ.body, constant(key), [inputnode(n) for n = 1:λ.args]...))
+struct LooseEnd
+  id::UInt64
+end
+
+function λopen(l::Lambda, args...)
+  l′ = OLambda(l.args)
+  body = spliceinputs(l.body, args...,
+                      [vertex(Split(i), constant(LooseEnd(l′.id))) for i = 1:l.args]...)
+  vertex(l′, body)
+end
+
+λopen(v::IVertex) = λopen(value(v), inputs(v)...)
+
+function λclose(l::OLambda, body)
+  in = LooseEnd(l.id)
   vars = []
   body = prewalk(body) do v
-    contains(v, Input()) && return v
-    push!(vars, postwalk(v -> v == constant(key) ? var : v, v))
-    inputnode(λ.args+length(vars))
+    contains(v, in) && return v
+    push!(vars, v)
+    vertex(Split(l.args+length(vars)), constant(in))
   end
+  body = map(x -> x == in ? Input() : x, body)
+  # Swap arguments with variables
   body = spliceinputs(body,
-                      [inputnode(i+length(vars)) for i = 1:λ.args]...,
+                      [inputnode(i+length(vars)) for i = 1:l.args]...,
                       [inputnode(i) for i = 1:length(vars)]...) |> detuple
-  Lambda(λ.args, body), vars
+  vertex(Lambda(l.args, body), vars...)
 end
 
-function fish(v::IVertex)
-  λ, vars = fish(value(v), inputs(v)...)
-  vertex(λ, vars...)
-end
+λclose(v::IVertex) = λclose(value(v), inputs(v)...)
