@@ -1,7 +1,7 @@
 using DataFlow, DataFlow.Fuzz
 using MacroTools, Lazy, Base.Test
 
-import DataFlow: graphm, syntax, dvertex, constant, prewalk
+import DataFlow: Call, graphm, syntax, dvertex, constant, prewalk
 
 @testset "DataFlow" begin
 
@@ -11,7 +11,7 @@ for nodes = 1:10, tries = 1:100
 
   dl = grow(DVertex, nodes)
 
-  @test dl == @> dl syntax(bindconst = true) graphm
+  @test dl == graphm(Dict(), syntax(dl))
 
   @test copy(dl) == dl
 
@@ -48,7 +48,7 @@ end
 end
 
 let x = :(2+2)
-  @test @flow(foo($x)) == dvertex(:foo, constant(x))
+  @test @flow(foo($x)) == dvertex(Call(), constant(:foo), constant(x))
 end
 
 end

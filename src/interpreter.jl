@@ -1,7 +1,7 @@
 module Interpreter
 
 using ..DataFlow
-using ..DataFlow: Constant, constant, value, spliceinputs, Frame, Line,
+using ..DataFlow: Call, Constant, constant, value, spliceinputs, Frame, Line,
   Lambda, Split, inputs
 using MacroTools: @q
 
@@ -53,7 +53,7 @@ interpret(ctx::Context, graph::IVertex, args...) =
 
 # The `ifoo` convention denotes a piece of interpreter middleware
 
-iconst(f, ctx::Context, ::Constant, x) = value(x)
+iconst(f, ctx::Context, c::Constant) = c.value
 
 function iline(f, ctx::Context, l::Union{Line,Frame}, v)
   push!(ctx.stack, l)
@@ -75,7 +75,7 @@ function ituple(f, ctx::Context, s::Split, xs)
     f(ctx, s, xs)
 end
 
-ituple(f, ctx::Context, ::typeof(tuple), xs...) = tuple(xs...)
+ituple(f, ctx::Context, ::Call, ::typeof(tuple), xs...) = tuple(xs...)
 
 for m in :[iconst, iline, ilinev, ilambda, ituple].args
   @eval $m(f, args...) = f(args...)

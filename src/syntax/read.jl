@@ -23,8 +23,7 @@ function normedges(ex)
   return ex
 end
 
-normalise(ex) =
-  @> ex normsplits normclosures block normedges normlines desugar
+normblock(ex) = @> ex MacroTools.flatten block normedges normlines
 
 function latenodes(exs)
   bindings = d()
@@ -49,8 +48,7 @@ function graphm!(v, bindings, ex::Expr)
   if @capture(ex, f_(args__))
     tovertex!(v, bindings, f, args...)
   else
-    thread!(v, dvertex(ex))
-    v.value = Constant()
+    v.value = Constant(ex)
   end
   return v
 end
@@ -77,7 +75,7 @@ function fillnodes!(bindings, nodes)
 end
 
 function graphm(bindings, exs::Vector)
-  exs = normalise(:($(exs...);)).args
+  exs = normblock(:($(exs...);)).args
   @capture(exs[end], result_Symbol = _)
   lates = latenodes(exs)
   merge!(bindings, lates)
@@ -87,4 +85,7 @@ end
 
 bindargs(xs) = Dict{Any,Any}(x => inputnode(i) for (i, x) in enumerate(xs))
 
-graphm(x; args = ()) = graphm(bindargs(args), block(x))
+normalise(ex) =
+  @> ex normops normcalls normsplits normclosures desugar
+
+graphm(x; args = ()) = graphm(bindargs(args), normalise(x))

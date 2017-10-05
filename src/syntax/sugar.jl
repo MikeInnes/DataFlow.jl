@@ -1,5 +1,17 @@
 import Base: ==
 
+struct Call end
+
+iscall(v::IVertex, f) = value(v) isa Call && isconstant(v[1]) && value(v[1]).value == f
+
+toexpr(c::Call, f, a...) = :($f($(a...)))
+
+function normcalls(ex)
+  MacroTools.prewalk(ex) do ex
+    @capture(ex, f_(xs__)) ? :($(Call())($f, $(xs...))) : ex
+  end
+end
+
 # Basic julia sugar
 
 function normops(ex)
@@ -15,37 +27,40 @@ function normops(ex)
 end
 
 function desugar(ex)
-  ex = normops(ex)
   MacroTools.prewalk(ex) do ex
     @match ex begin
-      (xs__,)   => :($tuple($(xs...)))
-      xs_[i__]  => :($getindex($xs, $(i...)))
-      f_.(xs__) => :($broadcast($f, $(xs...)))
+      (xs__,)   => :($(Call())($tuple, $(xs...)))
+      xs_[i__]  => :($(Call())($getindex, $xs, $(i...)))
+      f_.(xs__) => :($(Call())($broadcast, $f, $(xs...)))
       _ => ex
     end
   end
 end
 
-tocall(::typeof(tuple), xs...) = :($(xs...),)
-tocall(::typeof(getindex), x, i...) = :($x[$(i...)])
-tocall(::typeof(broadcast), f, xs...) = :($f.($(xs...)))
+toexpr(::Call, ::typeof(tuple), xs...) = :($(xs...),)
+toexpr(::Call, ::typeof(getindex), x, i...) = :($x[$(i...)])
+toexpr(::Call, ::typeof(broadcast), f, xs...) = :($f.($(xs...)))
 
 # Constants
 
-struct Constant end
+struct Constant
+  value
+end
 
-tocall(c::Constant, x) = x.args[1]
+toexpr(c::Constant) = c.value
 
 isconstant(v::Vertex) = isa(value(v), Constant)
 
-constant(x) = vertex(Constant(), vertex(x))
+constant(x) = vertex(Constant(x))
 constant(v::Vertex) = vertex(v)
+
+mapconst(f, v) = map(x -> x isa Constant ? Constant(f(x.value)) : x, v)
 
 # Blocks
 
 struct Do end
 
-tocall(::Do, a...) = :($(a...);)
+toexpr(::Do, a...) = :($(a...);)
 
 # Line Numbers
 
@@ -120,15 +135,15 @@ function normsplits(ex)
   end |> MacroTools.flatten |> block
 end
 
-tocall(s::Split, x) = :($x[$(s.n)])
+toexpr(s::Split, x) = :($x[$(s.n)])
 
-group(xs...) = vertex(tuple, xs...)
+group(xs...) = vertex(Call(), constant(tuple), xs...)
 
 # TODO: fail gracefully when tuples are short
 function detuple(v::IVertex)
   postwalk(v) do v
-    if isa(value(v), Split) && value(v[1]) == tuple
-      v[1][value(v).n]
+    if isa(value(v), Split) && iscall(v[1], tuple)
+      v[1][value(v).n+1]
     else
       v
     end
@@ -156,7 +171,7 @@ struct Input end
 
 inputnode(is...) = foldl((x, i) -> vertex(Split(i), x), constant(Input()), is)
 
-isinput(v::IVertex) = isa(value(v), Split) && isconstant(v[1]) && value(v[1][1]) == Input()
+isinput(v::IVertex) = isa(value(v), Split) && isconstant(v[1]) && value(v[1]).value == Input()
 
 function inputidx(v::IVertex)
   i = Int[]
@@ -177,7 +192,7 @@ end
 
 function spliceinput(v::IVertex, input::IVertex)
   postwalk(v) do v
-    isconstant(v) && value(v[1]) == Input() ? input : v
+    isconstant(v) && value(v).value == Input() ? input : v
   end
 end
 
@@ -218,16 +233,17 @@ end
 function tovertex!(v, bs, f::Lambda, body, args...)
   closed = setdiff(collect(filter(x -> inexpr(body, x), keys(bs))), args)
   vars = [closed..., args...]
-  v.value = Lambda(f.args, graphm(merge(bs, bindargs(vars)), body))
+  v.value = Lambda(f.args, graphm(merge(bs, bindargs(vars)), normblock(body)))
   thread!(v, graphm.(bs, closed)...)
 end
 
-function tocall(f::Lambda, closed...)
+function toexpr(f::Lambda, closed...)
   ex = :(;)
   bind(x, s = gensym(:c)) = (push!(ex.args, :($s = $x)); s)
   closed = [x isa Expr ? bind(x) : x for x in closed]
   args = [gensym(:x) for _ in 1:f.args]
   vars = [closed..., args...]
+  # TODO: replace with better spliceinputs
   body = prewalk(f.body) do x
     isinput(x) ? constant(vars[value(x).n]) :
     x == constant(Input()) ? constant(:($(vars...),)) :
@@ -265,11 +281,11 @@ function λclose(l::OLambda, body)
   in = LooseEnd(l.id)
   vars = []
   body = prewalk(body) do v
-    contains(v, in) && return v
+    (contains(v, Constant(in)) || isconstant(v)) && return v
     push!(vars, v)
     vertex(Split(l.args+length(vars)), constant(in))
   end
-  body = map(x -> x == in ? Input() : x, body)
+  body = mapconst(x -> x == in ? Input() : x, body)
   # Swap arguments with variables
   body = spliceinputs(body,
                       [inputnode(i+length(vars)) for i = 1:l.args]...,

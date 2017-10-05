@@ -1,6 +1,6 @@
 # Graph → Syntax
 
-tocall(f, a...) = :($f($(a...)))
+toexpr(f, xs...) = :($f($(xs...)))
 
 binding(bindings::Associative, v) =
   haskey(bindings, v) ? bindings[v] : (bindings[v] = gensym("edge"))
@@ -9,9 +9,9 @@ function syntax(head::DVertex; bindconst = !isfinal(head))
   vs = topo(head)
   ex, bs = :(;), ObjectIdDict()
   for v in vs
-    x = tocall(value(v), [binding(bs, n) for n in inputs(v)]...)
+    x = toexpr(value(v), [binding(bs, n) for n in inputs(v)]...)
     if !bindconst && isconstant(v) && nout(v) > 1
-      bs[v] = v[1].value
+      bs[v] = v.value.value
     elseif nout(v) > 1 || (!isfinal(head) && v ≡ head)
       edge = binding(bs, v)
       push!(ex.args, :($edge = $x))
@@ -35,8 +35,10 @@ function constructor(g)
   vertex = isa(g, DVertex) ? :(DataFlow.dvertex) : :(DataFlow.vertex)
   g = mapv(g) do v
     value(v) isa Lambda && (v.value = :(DataFlow.Lambda($(value(v).args), $(constructor(value(v).body)))))
-    prethread!(v, typeof(v)(Constant(), typeof(v)(value(v))))
-    v.value = vertex
+    value(v) isa Constant && (v.value = :(DataFlow.Constant($(value(v).value))))
+    prethread!(v, typeof(v)(Constant(value(v))))
+    prethread!(v, typeof(v)(Constant(vertex)))
+    v.value = Call()
     v
   end
   ex = syntax(g)

@@ -43,7 +43,7 @@ end
 function flowm(ex, f = dl)
   isdef(ex) && return flow_func(ex)
   g = graphm(block(ex))
-  g = map(x -> isexpr(x, :$) ? esc(x.args[1]) : Expr(:quote, x), g)
+  g = mapconst(x -> isexpr(x, :$) ? esc(x.args[1]) : Expr(:quote, x), g)
   constructor(f(g))
 end
 
