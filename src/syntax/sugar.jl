@@ -192,12 +192,18 @@ end
 
 function spliceinput(v::IVertex, input::IVertex)
   postwalk(v) do v
-    isconstant(v) && value(v).value == Input() ? input : v
+    inputidx(v) == [] ? input : v
   end
 end
 
-spliceinputs(v::IVertex, inputs::Vertex...) =
-  spliceinput(v, group(inputs...))
+function spliceinputs(v::IVertex, inputs::IVertex...)
+  g = group(inputs...)
+  prewalk(v) do v
+    idx = inputidx(v)
+    idx == [] ? g :
+    idx ≠ nothing && length(idx) == 1 ? stop(inputs[idx[1]]) : v
+  end
+end
 
 # TODO: move away from this, it's unreliable
 function graphinputs(v::IVertex)
@@ -243,12 +249,7 @@ function toexpr(f::Lambda, closed...)
   closed = [x isa Expr ? bind(x) : x for x in closed]
   args = [gensym(:x) for _ in 1:f.args]
   vars = [closed..., args...]
-  # TODO: replace with better spliceinputs
-  body = prewalk(f.body) do x
-    isinput(x) ? constant(vars[value(x).n]) :
-    x == constant(Input()) ? constant(:($(vars...),)) :
-      x
-  end
+  body = spliceinputs(f.body, constant.(vars)...)
   push!(ex.args, Expr(:->, :($(args...),), unblock(syntax(body))))
   return unblock(ex)
 end
@@ -289,7 +290,7 @@ function λclose(l::OLambda, body)
   # Swap arguments with variables
   body = spliceinputs(body,
                       [inputnode(i+length(vars)) for i = 1:l.args]...,
-                      [inputnode(i) for i = 1:length(vars)]...) |> detuple
+                      [inputnode(i) for i = 1:length(vars)]...)
   vertex(Lambda(l.args, body), vars...)
 end
 
