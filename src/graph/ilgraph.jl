@@ -28,10 +28,20 @@ vertex(a...) = IVertex{Any}(a...)
 
 vertex(x::Vertex) = convert(IVertex{Any}, x)
 
+struct Stop
+  x
+end
+
+stop(x) = Stop(x)
+
+unwrap_stop(x) = false, x
+unwrap_stop(x::Stop) = true, x.x
+
 function walk!(v::IVertex, pre, post, cache = ODict())
   haskey(cache, v) && return cache[v]::typeof(v)
-  cache[v] = v′ = pre(v)
-  map!(v -> walk!(v, pre, post, cache), v′.inputs, v′.inputs)
+  stop, v′ = unwrap_stop(pre(v))
+  cache[v] = v′
+  stop || map!(v -> walk!(v, pre, post, cache), v′.inputs, v′.inputs)
   cache[v] = post(v′)
 end
 
@@ -39,6 +49,7 @@ prewalk!(f, v::IVertex) = walk!(v, f, identity)
 postwalk!(f, v::IVertex) = walk!(v, identity, f)
 
 copy1(v::IVertex) = typeof(v)(v.value, v.inputs...)
+copy1(s::Stop) = Stop(copy1(s.x))
 
 walk(v::IVertex, pre, post) = walk!(v, v -> copy1(pre(v)), post)
 
