@@ -49,9 +49,11 @@ prewalk!(f, v::IVertex) = walk!(v, f, identity)
 postwalk!(f, v::IVertex) = walk!(v, identity, f)
 
 copy1(v::IVertex) = typeof(v)(v.value, v.inputs...)
-copy1(s::Stop) = Stop(copy1(s.x))
 
-walk(v::IVertex, pre, post) = walk!(v, v -> copy1(pre(v)), post)
+precopy(v) = copy1(v)
+precopy(v::Stop) = Stop(v.x)
+
+walk(v::IVertex, pre, post) = walk!(v, v -> precopy(pre(v)), post)
 
 prewalk(f, v::IVertex) = walk(v, f, identity)
 postwalk(f, v::IVertex) = walk(v, identity, f)
