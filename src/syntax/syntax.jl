@@ -22,7 +22,7 @@ end
 
 import Juno: Row, Tree
 
-code(x) = Juno.Model(Dict(:type=>"code",:text=>x))
+code(x) = Juno.Model(Dict(:type=>"code",:text=>x,:attrs=>Dict(:block=>true)))
 
 @render Juno.Inline v::Vertex begin
   s = MacroTools.alias_gensyms(syntax(v))
