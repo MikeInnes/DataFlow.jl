@@ -45,7 +45,9 @@ function tovertex!(v, bs, f, xs...)
 end
 
 function graphm!(v, bindings, ex::Expr)
-  if @capture(ex, f_(args__))
+  if isexpr(ex, :vertex)
+    tovertex!(v, bindings, ex.args...)
+  elseif @capture(ex, f_(args__))
     tovertex!(v, bindings, f, args...)
   else
     v.value = Constant(ex)
