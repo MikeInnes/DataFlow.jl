@@ -31,6 +31,7 @@ function desugar(ex)
     @match ex begin
       (xs__,)   => :($(Call())($tuple, $(xs...)))
       xs_[i__]  => :($(Call())($getindex, $xs, $(i...)))
+      (xs_[i__] = v_)  => :($(Call())($setindex!, $xs, $v, $(i...)))
       f_.(xs__) => :($(Call())($broadcast, $f, $(xs...)))
       _ => ex
     end
@@ -39,6 +40,7 @@ end
 
 toexpr(::Call, ::typeof(tuple), xs...) = :($(xs...),)
 toexpr(::Call, ::typeof(getindex), x, i...) = :($x[$(i...)])
+toexpr(::Call, ::typeof(setindex!), x, v, i...) = :($x[$(i...)] = $v)
 toexpr(::Call, ::typeof(broadcast), f, xs...) = :($f.($(xs...)))
 
 # Constants
