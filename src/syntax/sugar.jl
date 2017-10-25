@@ -141,17 +141,6 @@ toexpr(s::Split, x) = :($x[$(s.n)])
 
 group(xs...) = vertex(Call(), constant(tuple), xs...)
 
-# TODO: fail gracefully when tuples are short
-function detuple(v::IVertex)
-  postwalk(v) do v
-    if isa(value(v), Split) && iscall(v[1], tuple)
-      v[1][value(v).n+1]
-    else
-      v
-    end
-  end
-end
-
 # Bindings
 
 struct Bind
