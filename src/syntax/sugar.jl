@@ -43,6 +43,12 @@ toexpr(::Call, ::typeof(getindex), x, i...) = :($x[$(i...)])
 toexpr(::Call, ::typeof(setindex!), x, v, i...) = :($x[$(i...)] = $v)
 toexpr(::Call, ::typeof(broadcast), f, xs...) = :($f.($(xs...)))
 
+# Type assert
+
+struct TypeAssert end
+
+toexpr(::TypeAssert, x, T) = :($x::$T)
+
 # Constants
 
 struct Constant
