@@ -21,7 +21,9 @@ thread!(v::Vertex, xs...) = foldl(thread!, v, xs)
 (::Type{T}){T<:Vertex}(x, args...) = thread!(T(x), args...)
 
 Base.getindex(v::Vertex, i::Integer) = inputs(v)[i]
-Base.getindex(v::Vertex, is::Integer...) = foldl(getindex, v, is)
+Base.getindex(v::Vertex, i::Integer, is::Integer...) = v[i][is...]
+Base.setindex!(v::Vertex, x::Vertex, i::Integer) = v.inputs[i] = x
+Base.setindex!(v::Vertex, x::Vertex, i::Integer, is...) = v.inputs[i][is...] = x
 
 function collectv(v::Vertex, vs = OASet{typeof(v)}())
   v ∈ vs && return collect(vs)
