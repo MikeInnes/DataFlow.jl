@@ -29,7 +29,7 @@ The variables are stripped out and we directly model how data moves between diff
 We can run common subexpression elimination on the graph as follows:
 
 ```julia
-julia> DataFlow.cse(var.output)
+julia> DataFlow.cse(var)
 DataFlow.IVertex{Any}
 chamois = length(xs)
 sumabs2(xs) / chamois - (sum(xs) / chamois) ^ 2
