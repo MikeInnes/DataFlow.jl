@@ -79,7 +79,7 @@ end
 
 function iscyclic(v::IVertex)
   is = false
-  prefor(v -> is |= ↺(v), v)
+  prefor(v -> is |= (v < v), v)
   return is
 end
 

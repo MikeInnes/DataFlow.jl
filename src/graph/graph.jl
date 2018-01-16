@@ -57,6 +57,3 @@ end
 Base.isless(a::Vertex, b::Vertex) = isreaching(a, b)
 
 <<(a::Vertex, b::Vertex) = a < b && !(a > b)
-
-↺(v::Vertex) = v < v
-↺(a::Vertex, b::Vertex) = a < b && b < a
