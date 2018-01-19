@@ -55,15 +55,8 @@ macro iflow(ex)
   flowm(ex, il)
 end
 
-function vtxm(ex, f = dl)
-  exs = graphm(block(ex))
-  @>> exs graphm map(esc) f constructor
-end
-
 macro vtx(ex)
-  vtxm(ex)
-end
-
-macro ivtx(ex)
-  vtxm(ex, il)
+  exs = il(graphm(block(ex)))
+  exs = prewalkλ(withconst(esc), exs)
+  return constructor(exs)
 end

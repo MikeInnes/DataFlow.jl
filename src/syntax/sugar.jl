@@ -67,6 +67,8 @@ vcall(args...) = vertex(Call(), constant.(args)...)
 
 mapconst(f, v) = map(x -> x isa Constant ? Constant(f(x.value)) : x, v)
 
+withconst(f) = v -> isconstant(v) ? constant(f(v.value.value)) : v
+
 # Blocks
 
 struct Do end
