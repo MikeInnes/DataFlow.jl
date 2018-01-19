@@ -258,6 +258,18 @@ function toexpr(f::Lambda, closed...)
   return unblock(ex)
 end
 
+function applybody(f, v::IVertex)
+  @assert v.value isa Lambda
+  vertex(Lambda(v.value.args, f(v.value.body)), v.inputs...)
+end
+
+function prewalkλ(f, v::IVertex)
+  prewalk(v) do v
+    v = f(v)
+    islambda(v) ? applybody(v -> prewalkλ(f, v), v) : v
+  end
+end
+
 # "Open" Closures
 
 const uid = Ref(UInt64(0))
