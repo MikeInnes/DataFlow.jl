@@ -2,7 +2,8 @@ import Base: ==
 
 struct Call end
 
-iscall(v::IVertex, f) = value(v) isa Call && isconstant(v[1]) && value(v[1]).value == f
+iscall(v::IVertex) = value(v) isa Call
+iscall(v::IVertex, f) = iscall(v) && isconstant(v[1]) && value(v[1]).value == f
 
 toexpr(c::Call, f, a...) = :($f($(a...)))
 
@@ -61,6 +62,8 @@ isconstant(v::Vertex) = isa(value(v), Constant)
 
 constant(x) = vertex(Constant(x))
 constant(v::Vertex) = vertex(v)
+
+vcall(args...) = vertex(Call(), constant.(args)...)
 
 mapconst(f, v) = map(x -> x isa Constant ? Constant(f(x.value)) : x, v)
 
@@ -226,6 +229,8 @@ end
 
 a::Lambda == b::Lambda = a.args == b.args && a.body == b.body
 Base.hash(a::Lambda, h::UInt) = hash(Lambda, hash(a.args, hash(a.body, h)))
+
+islambda(v) = v.value isa Lambda
 
 function normclosures(ex)
   MacroTools.prewalk(shortdef(ex)) do ex
