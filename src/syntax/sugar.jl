@@ -205,7 +205,7 @@ function spliceinputs(v::IVertex, inputs::IVertex...)
   prewalk(v) do v
     idx = inputidx(v)
     idx == [] ? g :
-    idx ≠ nothing && length(idx) == 1 ? stop(inputs[idx[1]]) : v
+    idx ≠ nothing && length(idx) == 1 ? stop(get(collect(inputs), idx[1], v)) : v
   end
 end
 
