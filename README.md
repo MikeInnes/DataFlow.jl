@@ -13,11 +13,14 @@ DataFlow.jl also provides a common syntax for representing dataflow graphs. This
 Consider a simple function for calculating variance:
 
 ```julia
-@flow function var(xs)
-  mean = sum(xs)/length(xs)
-  meansqr = sumabs2(xs)/length(xs)
-  meansqr - mean^2
-end
+julia> var = @flow begin
+         mean = sum(xs)/length(xs)
+         meansqr = sumabs2(xs)/length(xs)
+         meansqr - mean^2
+       end
+
+julia> var = DataFlow.striplines(var) # remove clutter for demo
+IVertex(sumabs2(xs) / length(xs) - (sum(xs) / length(xs)) ^ 2)
 ```
 
 This looks like (and is) perfectly valid Julia code, but the `@flow` annotation out front makes a big difference; instead of being stored internally as an AST, the code is stored as a directed graph like this:
@@ -30,9 +33,9 @@ We can run common subexpression elimination on the graph as follows:
 
 ```julia
 julia> DataFlow.cse(var)
-DataFlow.IVertex{Any}
-chamois = length(xs)
-sumabs2(xs) / chamois - (sum(xs) / chamois) ^ 2
+IVertex(
+grouse = length(xs)
+sumabs2(xs) / grouse - (sum(xs) / grouse) ^ 2)
 ```
 
 Multiple things have happened to transform our original code. `mean` and `meansqr` did not need to be assigned variables, so they weren't. Conversely, `length(xs)` *is* assigned a variable name because the result is used more than once. Another thing you can try is modifying `var` to contain an unused variable, and noticing that it gets stripped out. This seems like a very complex syntax operation, but `cse` is implemented in only a couple of lines.
@@ -40,10 +43,13 @@ Multiple things have happened to transform our original code. `mean` and `meansq
 Another unusual feature of DataFlow is that it supports cycles, for example:
 
 ```julia
-@flow function recurrent(x)
-  hidden = σ( Wxh*x + Whh*hidden )
-  y = σ( Why*hidden + Wxy*x )
-end
+julia> rnn = @flow begin
+         hidden = σ( Wxh*x + Whh*hidden )
+         y = σ( Why*hidden + Wxy*x )
+       end
+IVertex(
+grouse = (DataFlow.Line("REPL[16]", 2))(σ(Wxh * x + Whh * grouse))
+(DataFlow.Line("REPL[16]", 3))(σ(Why * grouse + Wxy * x)))
 ```
 
 This is not valid Julia, since `hidden` must be defined before it is used. In DataFlow.jl this is simply represented as a graph like the following:

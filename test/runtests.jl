@@ -27,28 +27,18 @@ end
 
 @testset "Syntax" begin
 
-@flow function recurrent(xs)
-  hidden = σ( Wxh*xs + Whh*hidden + bh )
-  σ( Wxy*x + Why*hidden + by )
-end
-
-@test @capture syntax(recurrent) begin
-  h_Symbol = σ( Wxh*xs_ + Whh*h_Symbol + bh )
-  σ( Wxy*x + Why*h_Symbol + by )
-end
-
-@flow function var(xs)
-  mean = sum(xs_)/length(xs_)
-  meansqr = sumabs2(xs_)/length(xs_)
+var = @flow begin
+  mean = sum(xs)/length(xs)
+  meansqr = sumabs2(xs)/length(xs)
   meansqr - mean^2
 end
 
-@test @capture syntax(var) begin
-  sumabs2(xs_)/length(xs_) - (sum(xs_) / length(xs_)) ^ 2
+@test @capture syntax(DataFlow.striplines(var)) begin
+  sumabs2(xs)/length(xs) - (sum(xs) / length(xs)) ^ 2
 end
 
 let x = :(2+2)
-  @test @flow(foo($x)) == dvertex(Call(), constant(:foo), constant(x))
+  @test @flow(foo($x)) == vertex(Call(), constant(:foo), constant(x))
 end
 
 end

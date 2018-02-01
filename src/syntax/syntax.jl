@@ -31,32 +31,16 @@ end
 
 # Function / expression macros
 
-export @flow, @iflow, @vtx, @ivtx
-
-function flow_func(ex)
-  @capture(shortdef(ex), name_(args__) = exs__)
-  @assert all(isa.(args, Symbol))
-  output = graphm(exs, args = args)
-  :($(esc(name)) = $output)
-end
-
-function flowm(ex, f = dl)
-  isdef(ex) && return flow_func(ex)
-  g = graphm(block(ex))
-  g = mapconst(x -> isexpr(x, :$) ? esc(x.args[1]) : Expr(:quote, x), g)
-  constructor(f(g))
-end
+export @flow, @vtx
 
 macro flow(ex)
-  flowm(ex)
-end
-
-macro iflow(ex)
-  flowm(ex, il)
+  v = il(graphm(block(ex)))
+  v = prewalkλ(withconst(x -> isexpr(x, :$) ? esc(x.args[1]) : Expr(:quote, x)), v)
+  constructor(v)
 end
 
 macro vtx(ex)
-  exs = il(graphm(block(ex)))
-  exs = prewalkλ(withconst(esc), exs)
-  return constructor(exs)
+  v = il(graphm(block(ex)))
+  v = prewalkλ(withconst(esc), v)
+  return constructor(v)
 end
