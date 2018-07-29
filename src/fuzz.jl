@@ -5,9 +5,9 @@ import DataFlow: thread!
 
 export grow
 
-grow{T<:Vertex}(::Type{T}, value) = T(value())
+grow(::Type{T}, value) where T <: Vertex= T(value())
 
-function grow{T<:Vertex}(::Type{T}, nodes::Integer, edges::Integer = nodes)
+function grow(::Type{T}, nodes::Integer, edges::Integer = nodes) where T <: Vertex
   vs = [grow(T, ()->i) for i = 1:nodes]
   for _ = 1:edges
     thread!(rand(vs), rand(vs))

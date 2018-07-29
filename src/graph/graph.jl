@@ -4,9 +4,9 @@ import Base: copy, hash, ==, <, <<
 
 abstract type Vertex{T} end
 
-Base.eltype{T}(::Vertex{T}) = T
+Base.eltype(::Vertex{T}) where T= T
 
-Base.show{T}(io::IO, V::Type{<:Vertex{T}}) =
+Base.show(io::IO, V::Type{<:Vertex{T}}) where T=
   print(io, V.name.name, (T == Any ? [] : ["{", T, "}"])...)
 
 include("set.jl")
@@ -16,9 +16,9 @@ include("conversions.jl")
 
 thread!(to::Vertex, from) = thread!(to, convert(typeof(to), from))
 
-thread!(v::Vertex, xs...) = foldl(thread!, v, xs)
+thread!(v::Vertex, xs...) = foldl(thread!, v; init=xs)
 
-(::Type{T}){T<:Vertex}(x, args...) = thread!(T(x), args...)
+(::Type{T})(x, args...) where T <: Vertex = thread!(T(x), args...)
 
 Base.getindex(v::Vertex, i) = inputs(v)[i]
 Base.getindex(v::Vertex, i, is...) = v[i][is...]

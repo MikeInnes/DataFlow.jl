@@ -2,12 +2,12 @@
 
 toexpr(f, xs...) = :($f($(xs...)))
 
-binding(bindings::Associative, v) =
+binding(bindings::AbstractDict, v) =
   haskey(bindings, v) ? bindings[v] : (bindings[v] = gensym("edge"))
 
 function syntax(head::DVertex; bindconst = !isfinal(head))
   vs = topo(head)
-  ex, bs = :(;), ObjectIdDict()
+  ex, bs = :(;), IdDict{Any ,Any}()
   for v in vs
     x = toexpr(value(v), [binding(bs, n) for n in inputs(v)]...)
     if !bindconst && isconstant(v) && nout(v) > 1
