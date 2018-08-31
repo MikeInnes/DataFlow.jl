@@ -16,7 +16,7 @@ include("conversions.jl")
 
 thread!(to::Vertex, from) = thread!(to, convert(typeof(to), from))
 
-thread!(v::Vertex, xs...) = foldl(thread!, v; init=xs)
+thread!(v::Vertex, xs...) = foldl(thread!, xs; init=v)
 
 (::Type{T})(x, args...) where T <: Vertex = thread!(T(x), args...)
 
@@ -24,7 +24,8 @@ Base.getindex(v::Vertex, i) = inputs(v)[i]
 Base.getindex(v::Vertex, i, is...) = v[i][is...]
 Base.setindex!(v::Vertex, x::Vertex, i) = v.inputs[i] = x
 Base.setindex!(v::Vertex, x::Vertex, i, is...) = v.inputs[i][is...] = x
-Base.endof(v::Vertex) = endof(v.inputs)
+Base.iterate(v::Vertex) = iterate(inputs(v))
+Base.iterate(v::Vertex, state) = iterate(inputs(v), state)
 
 function collectv(v::Vertex, vs = OASet{typeof(v)}())
   v ∈ vs && return collect(vs)

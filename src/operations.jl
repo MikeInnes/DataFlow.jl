@@ -15,10 +15,10 @@ function duplicates(v::IVertex)
     v
   end
   cache = filter((_,n) -> n > 1, cache)
-  cache = filter((v,_) -> !any(v′ -> v′ ≠ v && contains(v′, v), keys(cache)), cache)
+  cache = filter((v,_) -> !any(v′ -> v′ ≠ v && contains_(v′, v), keys(cache)), cache)
 end
 
-function Base.contains(haystack::IVertex, needle::IVertex)
+function contains_(haystack::IVertex, needle::IVertex)
   result = false
   prewalk(haystack) do v
     result |= v == needle
@@ -27,12 +27,12 @@ function Base.contains(haystack::IVertex, needle::IVertex)
   return result
 end
 
-Base.contains(v::Vertex, w::Vertex) = contains(il(v), il(w))
+contains_(v::Vertex, w::Vertex) = contains_(il(v), il(w))
 
 function common(v::IVertex, w::IVertex, seen = OSet())
   w in seen && return Set{typeof(w)}()
   push!(seen, w)
-  if contains(v, w)
+  if contains_(v, w)
     Set{typeof(w)}((w,))
   else
     union((common(v, w′, seen) for w′ in inputs(w))...)

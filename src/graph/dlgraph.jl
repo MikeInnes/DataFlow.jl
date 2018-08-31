@@ -51,8 +51,9 @@ function equal(a::Vertex, b::Vertex, seen = OSet())
   for (i, j) in zip(inputs(a), inputs(b))
     equal(i, j, seen) || return false
   end
-  @assert @>> a outputs map(value) allunique
-  @assert @>> b outputs map(value) allunique
+  each_val =  x -> Set((value(y) for y = x))
+  @assert @>> a outputs each_val allunique
+  @assert @>> b outputs each_val allunique
   for o in outputs(a)
     p = filter(p -> value(p) == value(o), collect(outputs(b)))
     isempty(p) && return false

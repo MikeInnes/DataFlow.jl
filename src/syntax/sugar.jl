@@ -86,8 +86,10 @@ const noline = Line("", -1)
 
 function Line(ex::Expr)
   @assert ex.head == :line
-  Line(string(ex.args[2]), ex.args[1])
+  Line(String(ex.args[2]), ex.args[1])
 end
+
+Line(l::LineNumberNode) = Line(String(l.file), l.line)
 
 function normlines(ex)
   line = noline
@@ -300,7 +302,7 @@ function λclose(l::OLambda, body)
   in = LooseEnd(l.id)
   vars = []
   body = prewalk(body) do v
-    (contains(v, Constant(in)) || isconstant(v)) && return v
+    (contains_(v, Constant(in)) || isconstant(v)) && return v
     push!(vars, v)
     vertex(Split(l.args+length(vars)), constant(in))
   end
