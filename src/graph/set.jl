@@ -1,20 +1,20 @@
 const ASet{T} = Base.AbstractSet{T}
-const ODict = ObjectIdDict
+const ODict = IdDict
 
 struct ObjectIdSet{T} <: ASet{T}
-  dict::ObjectIdDict
-  ObjectIdSet{T}() where T = new(ObjectIdDict())
+  dict::IdDict{Any, Any}
+  ObjectIdSet{T}() where T = new(IdDict{Any, Any}())
 end
 
-Base.eltype{T}(::ObjectIdSet{T}) = T
+Base.eltype(::ObjectIdSet{T}) where T= T
 
 ObjectIdSet() = ObjectIdSet{Any}()
 
-Base.push!{T}(s::ObjectIdSet{T}, x::T) = (s.dict[x] = nothing; s)
-Base.delete!{T}(s::ObjectIdSet{T}, x::T) = (delete!(s.dict, x); s)
+Base.push!(s::ObjectIdSet{T}, x::T) where T= (s.dict[x] = nothing; s)
+Base.delete!(s::ObjectIdSet{T}, x::T) where T= (delete!(s.dict, x); s)
 Base.in(x, s::ObjectIdSet) = haskey(s.dict, x)
 
-(::Type{ObjectIdSet{T}}){T}(xs) = push!(ObjectIdSet{T}(), xs...)
+(::Type{ObjectIdSet{T}})(xs) where T= push!(ObjectIdSet{T}(), xs...)
 
 ObjectIdSet(xs) = ObjectIdSet{eltype(xs)}(xs)
 
@@ -32,7 +32,7 @@ struct ObjectArraySet{T} <: ASet{T}
   ObjectArraySet{T}() where T = new(T[])
 end
 
-Base.in{T}(x::T, s::ObjectArraySet{T}) = any(y -> x ≡ y, s.xs)
+Base.in(x::T, s::ObjectArraySet{T}) where T= any(y -> x ≡ y, s.xs)
 Base.push!(s::ObjectArraySet, x) = (x ∉ s && push!(s.xs, x); s)
 
 function Base.delete!(s::ObjectArraySet, x)
@@ -41,7 +41,7 @@ function Base.delete!(s::ObjectArraySet, x)
   return s
 end
 
-(::Type{ObjectArraySet{T}}){T}(xs) = push!(ObjectArraySet{T}(), xs...)
+(::Type{ObjectArraySet{T}})(xs) where T= push!(ObjectArraySet{T}(), xs...)
 
 ObjectArraySet(xs) = ObjectArraySet{eltype(xs)}(xs)
 

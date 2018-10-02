@@ -4,9 +4,9 @@ import Base: copy, hash, ==, <, <<
 
 abstract type Vertex{T} end
 
-Base.eltype{T}(::Vertex{T}) = T
+Base.eltype(::Vertex{T}) where T= T
 
-Base.show{T}(io::IO, V::Type{<:Vertex{T}}) =
+Base.show(io::IO, V::Type{<:Vertex{T}}) where T=
   print(io, V.name.name, (T == Any ? [] : ["{", T, "}"])...)
 
 include("set.jl")
@@ -16,15 +16,16 @@ include("conversions.jl")
 
 thread!(to::Vertex, from) = thread!(to, convert(typeof(to), from))
 
-thread!(v::Vertex, xs...) = foldl(thread!, v, xs)
+thread!(v::Vertex, xs...) = foldl(thread!, xs; init=v)
 
-(::Type{T}){T<:Vertex}(x, args...) = thread!(T(x), args...)
+(::Type{T})(x, args...) where T <: Vertex = thread!(T(x), args...)
 
 Base.getindex(v::Vertex, i) = inputs(v)[i]
 Base.getindex(v::Vertex, i, is...) = v[i][is...]
 Base.setindex!(v::Vertex, x::Vertex, i) = v.inputs[i] = x
 Base.setindex!(v::Vertex, x::Vertex, i, is...) = v.inputs[i][is...] = x
-Base.endof(v::Vertex) = endof(v.inputs)
+Base.iterate(v::Vertex) = iterate(inputs(v))
+Base.iterate(v::Vertex, state) = iterate(inputs(v), state)
 
 function collectv(v::Vertex, vs = OASet{typeof(v)}())
   v ∈ vs && return collect(vs)

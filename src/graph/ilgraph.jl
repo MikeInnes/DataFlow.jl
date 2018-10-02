@@ -18,7 +18,7 @@ function thread!(to::IVertex, from::IVertex)
 end
 
 function prethread!(to::IVertex, from::IVertex)
-  unshift!(inputs(to), from)
+  pushfirst!(inputs(to), from)
   return to
 end
 
@@ -83,7 +83,7 @@ function iscyclic(v::IVertex)
   return is
 end
 
-function Base.contains(haystack::IVertex, needle)
+function contains_(haystack::IVertex, needle)
   result = false
   map(v -> result |= v == needle, haystack)
   return result

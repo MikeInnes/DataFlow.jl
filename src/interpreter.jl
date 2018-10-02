@@ -15,12 +15,12 @@ mux(ms...) = foldr(mux, ms)
 
 struct Context{T}
   interp::T
-  cache::ObjectIdDict
+  cache::IdDict{Any, Any}
   stack::Vector{Any}
   data::Dict{Symbol,Any}
 end
 
-Context(interp; kws...) = Context(interp, ObjectIdDict(), [], Dict{Symbol,Any}(kws))
+Context(interp; kws...) = Context(interp, IdDict{Any, Any}(), [], Dict{Symbol,Any}(kws))
 
 Base.getindex(ctx::Context, k::Symbol) = ctx.data[k]
 Base.setindex!(ctx::Context, v, k::Symbol) = ctx.data[k] = v
@@ -92,17 +92,17 @@ interpret(graph::IVertex, args...) =
 import Juno: errmsg, errtrace
 
 framename(f::Function) = typeof(f).name.mt.name
-framename(f::Void) = Symbol("<none>")
+framename(f::Base.Nothing) = Symbol("<none>")
 framename(x) = Symbol(string(typeof(x)))
 
-totrace(stack) = [StackFrame(framename(f), Symbol(line.file), line.line)
+totrace(stack) = [StackTraces.StackFrame(framename(f), Symbol(line.file), line.line)
                   for (f, line) in stack]
 
 Base.stacktrace(c::Context) = totrace(stack(c))
 
 struct Exception{T}
   err::T
-  trace::StackTrace
+  trace::StackTraces.StackTrace
 end
 
 errmsg(e::Exception) = errmsg(e.err)
@@ -122,7 +122,7 @@ end
 
 function trimtrace(trace)
   trace = reverse(trace)
-  comp = reverse(stacktrace())
+  comp = reverse(StackTraces.stacktrace())
   n = 1
   while n < length(trace) && n < length(comp) && trace[n] == comp[n]
     n += 1

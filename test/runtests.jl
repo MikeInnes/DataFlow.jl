@@ -1,5 +1,5 @@
 using DataFlow, DataFlow.Fuzz
-using MacroTools, Lazy, Base.Test
+using MacroTools, Lazy, Test
 
 import DataFlow: Call, graphm, syntax, dvertex, constant, prewalk
 
