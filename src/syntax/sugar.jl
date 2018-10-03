@@ -175,7 +175,7 @@ struct Input end
 
 Base.show(io::IO, ::Input) = print(io, "Input()")
 
-inputnode(is...) = foldl((x, i) -> vertex(Split(i), x), constant(Input()), is)
+inputnode(is...) = foldl((x, i) -> vertex(Split(i), x), is, init=constant(Input()))
 
 isinput(v::IVertex) = isa(value(v), Split) && isconstant(v[1]) && value(v[1]).value == Input()
 
