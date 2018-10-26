@@ -26,6 +26,7 @@ Base.setindex!(v::Vertex, x::Vertex, i) = v.inputs[i] = x
 Base.setindex!(v::Vertex, x::Vertex, i, is...) = v.inputs[i][is...] = x
 Base.iterate(v::Vertex) = iterate(inputs(v))
 Base.iterate(v::Vertex, state) = iterate(inputs(v), state)
+Base.lastindex(v::Vertex) = lastindex(v.inputs)
 
 function collectv(v::Vertex, vs = OASet{typeof(v)}())
   v ∈ vs && return collect(vs)
