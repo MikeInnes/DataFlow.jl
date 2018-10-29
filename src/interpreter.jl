@@ -31,10 +31,10 @@ function stack(c::Context)
   frame = nothing
   for i = 1:length(c.stack)
     isa(c.stack[i], Frame) || continue
-    i > 1 && isa(c.stack[i-1], Line) && unshift!(stk, (frame, c.stack[i-1]))
+    i > 1 && isa(c.stack[i-1], Line) && pushfirst!(stk, (frame, c.stack[i-1]))
     frame = c.stack[i].f
   end
-  isa(c.stack[end], Line) && unshift!(stk, (frame, c.stack[end]))
+  isa(c.stack[end], Line) && pushfirst!(stk, (frame, c.stack[end]))
   return stk
 end
 

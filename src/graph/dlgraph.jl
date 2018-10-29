@@ -19,7 +19,7 @@ function thread!(to::DVertex, from::DVertex)
 end
 
 function prethread!(to::DVertex, from::DVertex)
-  unshift!(inputs(to), from)
+  pushfirst!(inputs(to), from)
   push!(outputs(from), to)
   return to
 end

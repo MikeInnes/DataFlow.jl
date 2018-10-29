@@ -182,7 +182,7 @@ isinput(v::IVertex) = isa(value(v), Split) && isconstant(v[1]) && value(v[1]).va
 function inputidx(v::IVertex)
   i = Int[]
   while value(v) isa Split
-    unshift!(i, value(v).n)
+    pushfirst!(i, value(v).n)
     v = v[1]
   end
   v == constant(Input()) ? i : nothing
