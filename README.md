@@ -2,7 +2,9 @@
 
 [![Build Status](https://travis-ci.org/MikeInnes/DataFlow.jl.svg?branch=master)](https://travis-ci.org/MikeInnes/DataFlow.jl)
 
-DataFlow.jl is a code intermediate representation (IR) format. It can be thought of as antithetical to SSA form; where SSA allows only statements, DataFlow allows only expressions. Closures are represented explicitly, allowing full programs to be easily represented and manipulated and complex whole-program transformations to be applied. Moreover, programs can be kept in a high-level form that's very human-readable.
+**Note:** This package is deprecated. You should take a look at [IRTools](https://github.com/MikeInnes/IRTools.jl) instead.
+
+DataFlow.jl is a code intermediate representation (IR) format, representing code as an expression graph. It supports closures are represented explicitly, allowing full programs to be easily represented and manipulated and complex whole-program transformations to be applied. Moreover, programs can be kept in a high-level form that's very human-readable.
 
 A data flow graph is a bit like an expression tree without variables; functions always refer to their inputs directly. Underneath it's a directed graph linking the output of one function call to the input of another. DataFlow.jl provides functions like `prewalk` and `postwalk` which allow you to do crazy graph-restructuring operations with minimal code, *even on cyclic graphs*. Think algorithms like common subexpression elimination implemented in [one line](https://github.com/MikeInnes/DataFlow.jl/blob/d5899a47ed052190e655afdf1510e021ad95d09d/src/operations.jl#L2) rather than hundreds.
 
