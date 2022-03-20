@@ -50,6 +50,6 @@ Base.similar(s::ObjectArraySet, T::Type) = ObjectArraySet{T}()
 
 @forward ObjectArraySet.xs Base.length
 
-@iter xs::ObjectArraySet -> xs.xs
+@forward ObjectArraySet.xs Base.iterate
 
 const OASet{T} = ObjectArraySet{T}

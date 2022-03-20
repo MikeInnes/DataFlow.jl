@@ -2,8 +2,9 @@ __precompile__()
 
 module DataFlow
 
-using Lazy, MacroTools, Juno
+using MacroTools, Juno, Lazy
 using Base.Iterators: filter
+using MacroTools: @q, @forward
 
 include("graph/graph.jl")
 include("syntax/syntax.jl")

@@ -7,7 +7,7 @@ binding(bindings::AbstractDict, v) =
 
 function syntax(head::DVertex; bindconst = !isfinal(head))
   vs = topo(head)
-  ex, bs = :(;), IdDict{Any ,Any}()
+  ex, bs = @q(begin end), IdDict{Any ,Any}()
   for v in vs
     x = toexpr(value(v), [binding(bs, n) for n in inputs(v)]...)
     if !bindconst && isconstant(v) && nout(v) > 1
@@ -51,5 +51,8 @@ function constructor(g)
       push!(exs, x)
     end
   end
-  return :($(decls...);$(exs...))
+  return @q begin
+    $(decls...)
+    $(exs...)
+  end
 end
